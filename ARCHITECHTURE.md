@@ -30,6 +30,44 @@ sequenceDiagram
     Container -->>- Database Context : Resolve DI
 ```
 
+---
+
+Directory structure:
+
+
+```
+├── src/
+│   ├── App/
+│   │   ├── Program.cs
+│   │   ├── Assets/
+│   │   ├── Extensions/
+│   │   ├── Forms/
+│   │   └── Handlers/
+│   ├── Core/
+│   │   ├── Abstractions/
+│   │   │   ├── Events/
+│   │   │   ├── Services/
+│   │   │   └── Stores/
+│   │   ├── Constants/
+│   │   ├── Enums/
+│   │   │   └── Win32/
+│   │   ├── Extensions/
+│   │   ├── Helpers/
+│   │   ├── Structs/
+│   │   ├── Win32/
+│   │   │   ├── API/
+│   │   │   └── Controls/
+│   │   └── Wrappers/
+│   └── Infrastructure/
+│       ├── Infrastructure.csproj
+│       ├── Controls/
+│       │   └── Logger/
+│       ├── Extensions/
+│       ├── Services/
+│       └── Stores/
+└── test/
+```
+
 ### **src/**
 The `src` directory contains all the main source code of the application. It is structured into the following layers:
 
