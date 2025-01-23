@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ForceDesignerDPIUnaware>true</ForceDesignerDPIUnaware>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>Product Name</Product>
+    <Title></Title>
+    <Owners></Owners>
+    <Authors></Authors>
+    <Copyright>Copyright © 2025</Copyright>
+    <Description>Product Description</Description>
+    <FileVersion>1.0.0.0</FileVersion>
+    <ProductVersion>1.0.0</ProductVersion>
+  </PropertyGroup>
+</Project>
