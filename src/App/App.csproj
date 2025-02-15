@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
@@ -12,7 +12,6 @@
     <Folder Include="Assets\Images\" />
     <Folder Include="Components\Dialogs\" />
     <Folder Include="Components\Controls\" />
-    <Folder Include="Shared\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,13 +22,13 @@
   <!-- Microsoft defines this target here: https://github.com/dotnet/sdk/blob/main/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets#L827 -->
   <!-- Run our custom version, first -->
   <UsingTask TaskName="CreateAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="CreateAppHost" Inputs="@(IntermediateAssembly);$(AppHostSourcePath)" Outputs="$(AppHostIntermediatePath)" BeforeTargets="_CreateAppHost" Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and '$(AppHostSourcePath)' != '' and Exists('@(IntermediateAssembly)') and Exists('$(AppHostSourcePath)')">
+  <Target Name="CreateAppHost" Inputs="@(IntermediateAssembly);$(AppHostSourcePath)" Outputs="$(AppHostIntermediatePath)" BeforeTargets="_CreateAppHost" Condition="'$(Configuration)' == 'Release' and '$(ComputeNETCoreBuildOutputFiles)' == 'true' and '$(AppHostSourcePath)' != '' and Exists('@(IntermediateAssembly)') and Exists('$(AppHostSourcePath)')">
     <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)" AppHostDestinationPath="$(AppHostIntermediatePath)" AppBinaryName="bin\$(AssemblyName)$(TargetExt)" IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')" WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)" Retries="$(CopyRetryCount)" RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)" />
   </Target>
 
   <!-- Microsoft computes this in target ResolveAssemlyReferences, defined here: https://github.com/dotnet/msbuild/blob/main/src/Tasks/Microsoft.Common.CurrentVersion.targets#L2369 -->
   <!-- After they do so, redirect to the bin directory -->
-  <Target Name="RedirectReferenceCopyLocalPaths" BeforeTargets="CoreCompile">
+  <Target Condition="'$(Configuration)' == 'Release'" Name="RedirectReferenceCopyLocalPaths" BeforeTargets="CoreCompile">
     <ItemGroup>
       <ReferenceCopyLocalPaths Update="@(ReferenceCopyLocalPaths-&gt;HasMetadata('PathInPackage'))">
         <DestinationSubDirectory>bin/</DestinationSubDirectory>
@@ -39,7 +38,7 @@
 
   <!-- Microsoft computes this here: https://github.com/dotnet/sdk/blob/main/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets#L87 -->
   <!-- After they do so, redirect to the bin directory -->
-  <Target Name="RedirectProjectRuntimeConfigFilePath" BeforeTargets="CoreCompile">
+  <Target Condition="'$(Configuration)' == 'Release'" Name="RedirectProjectRuntimeConfigFilePath" BeforeTargets="CoreCompile">
     <PropertyGroup>
       <ProjectRuntimeConfigFileName>$(AssemblyName).runtimeconfig.json</ProjectRuntimeConfigFileName>
       <ProjectRuntimeConfigFilePath>$(TargetDir)bin/$(ProjectRuntimeConfigFileName)</ProjectRuntimeConfigFilePath>
@@ -49,7 +48,7 @@
   <!-- The app binary needs to be moved to the bin directory -->
   <!-- Note that we're copying instead of moving; otherwise Visual Studio gets confused and thinks the build failed because the expected output was missing -->
   <!-- I experimented with redirecting the target dir to the bin dir, but that ended up in cascading into needing too many needed changes -->
-  <Target Name="CopyAppBinary" Inputs="$(TargetPath)" Outputs="$(TargetDir)bin/" AfterTargets="Build">
+  <Target Condition="'$(Configuration)' == 'Release'" Name="CopyAppBinary" Inputs="$(TargetPath)" Outputs="$(TargetDir)bin/" AfterTargets="Build">
     <Move SourceFiles="$(TargetPath)" DestinationFolder="$(TargetDir)bin/" />
   </Target>
 

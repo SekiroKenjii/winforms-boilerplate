@@ -1,3 +1,4 @@
+using App.Shared.Forms;
 using Core.Abstractions.Services;
 using Core.Abstractions.Stores;
 using Core.Enums;
@@ -5,7 +6,7 @@ using Serilog.Events;
 
 namespace App.Forms;
 
-public partial class MainForm : Form
+public partial class MainForm : StandardBaseForm
 {
     private readonly IEventStore _eventStore;
     private readonly ILogService _logService;
@@ -18,7 +19,9 @@ public partial class MainForm : Form
         _logService = logService;
 
         InitializeComponent();
+
         _logService.BindControlLoggerContext<MainForm>();
+
         InitializeFormEvents();
 
         _logService.WriteLog(LogEventLevel.Information, "Application initialized successfully.");
@@ -59,7 +62,7 @@ public partial class MainForm : Form
             return;
         }
 
-        ShowNtySysTray();
+        ShowSysTrayIcon();
     }
 
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -70,10 +73,10 @@ public partial class MainForm : Form
         }
 
         e.Cancel = true;
-        ShowNtySysTray();
+        ShowSysTrayIcon();
     }
 
-    private void ShowNtySysTray()
+    private void ShowSysTrayIcon()
     {
         Hide();
         ntySysTray.Visible = true;
