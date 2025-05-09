@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
+  </PropertyGroup>
+  <!-- src packages -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.183" />
+    <PackageVersion Include="Serilog" Version="4.2.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+  <!-- test packages -->
+  <ItemGroup>
+    <PackageVersion Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+</Project>
