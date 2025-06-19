@@ -1,0 +1,6 @@
+// advapi32.dll
+LogonUser
+
+// credui.dll
+CredUIPromptForWindowsCredentials
+CredUnPackAuthenticationBuffer
