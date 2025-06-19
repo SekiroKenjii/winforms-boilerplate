@@ -35,8 +35,6 @@
 
   <ItemGroup>
     <Folder Include="Components\" />
-    <Folder Include="Extensions\" />
-    <Folder Include="Handlers\" />
     <Folder Include="Shared\" />
     <Folder Include="Properties\Resources\Icons\" />
     <Folder Include="Properties\Resources\Images\16x\" />
