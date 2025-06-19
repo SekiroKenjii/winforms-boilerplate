@@ -8,10 +8,10 @@ namespace WinformsBoilerplate.Core.Abstractions.Stores;
 public interface IEventStore : IDispatchable
 {
     /// <summary>
-    /// Adds teardown logic entries associated with a specific target object to the store.
+    /// Adds a collection of teardown logic entries associated with a specific target object to the store.
     /// </summary>
     /// <typeparam name="T">The type of the entity associated with the teardown logic.</typeparam>
-    /// <param name="teardownLogics">An array of <see cref="TeardownLogic"/> instances to be added.</param>
+    /// <param name="teardownLogics">The read-only span of <see cref="TeardownLogic"/> instances to be added.</param>
     /// <remarks>
     /// This method is typically used for adding multiple teardown logics at once.
     /// </remarks>

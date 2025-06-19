@@ -20,10 +20,6 @@ public interface ITabControl : IControl
     /// <summary>
     /// Gets or sets the currently active (selected) tab page within the control.
     /// </summary>
-
-    /// <summary>
-    /// Gets or sets the currently active (selected) tab page within the control.
-    /// </summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     TabPage? SelectedTab { get; set; }
 

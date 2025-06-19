@@ -1,5 +1,6 @@
 namespace WinformsBoilerplate.Core.Abstractions.Services;
 
-internal interface ISystemService
-{
-}
+/// <summary>
+/// Defines a contract for system-level services within the application.
+/// </summary>
+public interface ISystemService { }

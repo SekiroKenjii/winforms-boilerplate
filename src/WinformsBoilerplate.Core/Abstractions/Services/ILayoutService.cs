@@ -1,5 +1,6 @@
 namespace WinformsBoilerplate.Core.Abstractions.Services;
 
-public interface ILayoutService
-{
-}
+/// <summary>
+/// Defines a contract for layout management within the application.
+/// </summary>
+public interface ILayoutService { }
