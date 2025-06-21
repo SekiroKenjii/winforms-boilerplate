@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WinformsBoilerplate.App.Extensions;
-using WinformsBoilerplate.Core.Entities.Settings;
+using WinformsBoilerplate.App.Helpers;
 using WinformsBoilerplate.Core.Entities.Systems;
 
 namespace WinformsBoilerplate.App;
@@ -14,9 +14,25 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        if (!AssemblyHelpers.ValidateLibVersions(out Version requiredVersion))
+        {
+            _ = MessageBox.Show(
+                $"One or more dependent libraries are out of date. Minimum required version is {requiredVersion}.",
+                Application.ProductName,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+
+            return;
+        }
+
+        AssemblyHelpers.ResolveCurrentDomainAssembly();
+
         IHost host = CreateHostBuilder().Build();
 
         host.MapHandlers();
+        host.InitializeModules();
+        host.Bootstrap();
+        host.RunApplication();
     }
 
     /// <summary>
@@ -27,8 +43,10 @@ internal static class Program
     {
         return Host.CreateDefaultBuilder()
             .ConfigureServices((context, services) => {
-                _ = services.AddSingleton<AppArguments>()
-                            .AddSingleton<AppSettings>();
+                services.AddSingleton<AppArguments>()
+                        .AddInfrastructure();
+
+                services.BindSettings();
             });
     }
 }

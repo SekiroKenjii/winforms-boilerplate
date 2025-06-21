@@ -28,7 +28,7 @@ public class AppArguments
     /// Value: Optional value for the flag. If provided without value, an empty string is stored. <br/>
     /// When this flag is present, the application ignores system DPI settings.
     /// </remarks>
-    public KeyValuePair<string, string> DpiUnaware { get; set; }
+    public KeyValuePair<string, string>? DpiUnaware { get; set; }
 
     /// <summary>
     /// Parses an array of command-line arguments and maps them to properties.
