@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace WinformsBoilerplate.Core.Abstractions.Stores;
+namespace WinformsBoilerplate.Core.Abstractions;
 
 /// <summary>
 /// Defines a contract for dispatching actions with varying numbers of parameters.
