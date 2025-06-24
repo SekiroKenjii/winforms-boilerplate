@@ -2,7 +2,7 @@
   "profiles": {
     "WinformsBoilerplate.App": {
       "commandName": "Project",
-      "commandLineArgs": "--dpi-unaware"
+      "commandLineArgs": ""
     }
   }
 }

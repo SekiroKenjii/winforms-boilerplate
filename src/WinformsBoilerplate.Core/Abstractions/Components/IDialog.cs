@@ -1,14 +1,12 @@
 namespace WinformsBoilerplate.Core.Abstractions.Components;
 
 /// <summary>
-/// Represents a UI dialog control, extending standard control functionality
-/// with additional lifecycle handling for dialog-specific events.
+/// Represents a dialog control that provides functionality for user interaction within a graphical user interface.
 /// </summary>
-/// <remarks>
-/// Implement this interface for form-based dialogs or pop-ups that require specific logic
-/// when the user attempts to close the dialog (e.g., validation, confirmation, cleanup tasks).
-/// </remarks>
-public interface IDialog : IControl
+/// <remarks>A dialog is typically used to display information, prompt the user for input, or facilitate specific
+/// tasks. Implementations of this interface may include modal or non-modal dialogs, and can support various types of
+/// user interactions.</remarks>
+public interface IDialog : IControl, IComponentEvent
 {
     /// <summary>
     /// Event handler invoked when the dialog is about to close.

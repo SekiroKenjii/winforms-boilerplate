@@ -1,12 +1,9 @@
 namespace WinformsBoilerplate.Core.Abstractions.Components;
 
 /// <summary>
-/// Represents a UI form, acting as a specialized control container for other controls.
-/// Inherits standard UI management features from <see cref="IControl"/>.
+/// Represents a user interface form that serves as a container for controls and handles component events.
 /// </summary>
-/// <remarks>
-/// This interface serves primarily as a marker for distinguishing form-like controls
-/// within the application's user interface structure. Additional form-specific functionality
-/// or lifecycle events may be implemented in derived classes.
-/// </remarks>
-public interface IForm : IControl;
+/// <remarks>This interface defines the contract for a form in a UI framework, enabling the management of controls
+/// and interaction with component events. Implementations of <see cref="IForm"/> typically provide functionality  for
+/// rendering, layout management, and event handling.</remarks>
+public interface IForm : IControl, IComponentEvent;

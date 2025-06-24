@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using WinformsBoilerplate.Core.Abstractions.Serializers;
 using WinformsBoilerplate.Core.Abstractions.Services;
+using WinformsBoilerplate.Core.Abstractions.Stores;
 using WinformsBoilerplate.Infrastructure.Serializer;
 using WinformsBoilerplate.Infrastructure.Services;
+using WinformsBoilerplate.Infrastructure.Stores;
 
 namespace WinformsBoilerplate.Infrastructure.Extensions;
 
@@ -38,6 +40,9 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection.</param>
     public static void AddStores(this IServiceCollection services)
     {
-        // Register your stores here
+        _ = services
+            .AddSingleton<IEventStore, EventStore>()
+            .AddSingleton<ILocalStore, LocalStore>()
+            .AddSingleton<ISessionStore, SessionStore>();
     }
 }

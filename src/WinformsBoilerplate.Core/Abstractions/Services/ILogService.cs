@@ -44,17 +44,11 @@ public interface ILogService : IDisposable
     void CreateFileLoggers();
 
     /// <summary>
-    /// Binds the specified logger to a control identified by its name within the given context.
+    /// Binds a logger to a control within the specified context type.
     /// </summary>
-    /// <remarks>
-    /// This method associates a logger with a control, enabling logging for operations or events
-    /// related to the control. If <paramref name="logger"/> is null, no logging will occur for the specified
-    /// control.
-    /// </remarks>
-    /// <typeparam name="TContext">The type of the context in which the control resides.</typeparam>
-    /// <param name="controlName">The name of the control to bind the logger to. Cannot be null or empty.</param>
-    /// <param name="logger">The logger instance to bind to the control. If null, logging will be disabled for the control.</param>
-    void BindLoggerToControl<TContext>(string controlName, Logger? logger);
+    /// <typeparam name="TContext">The type of the context in which the control resides. This type is used to determine the scope of the logger
+    /// binding.</typeparam>
+    void BindLoggerToControl<TContext>();
 
     /// <summary>
     /// Writes a log entry with the specified log level and message.

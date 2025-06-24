@@ -45,8 +45,8 @@ internal static class Program
             .ConfigureServices((context, services) => {
                 services.AddSingleton<AppArguments>()
                         .AddInfrastructure();
-
                 services.BindSettings();
+                services.AddComponents();
             });
     }
 }

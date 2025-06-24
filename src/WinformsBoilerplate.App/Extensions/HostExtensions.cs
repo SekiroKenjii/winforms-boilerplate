@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WinformsBoilerplate.App.Components.Forms;
+using WinformsBoilerplate.Core.Abstractions.Components.Forms;
 using WinformsBoilerplate.Core.Abstractions.Host;
+using WinformsBoilerplate.Core.Abstractions.Services;
 using WinformsBoilerplate.Core.Entities.Systems;
 using WinformsBoilerplate.Infrastructure.Extensions;
 
@@ -47,6 +50,9 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to bootstrap.</param>
     public static void Bootstrap(this IHost host)
     {
+        ISystemService systemService = host.Services.GetRequiredService<ISystemService>();
+        systemService.PerformSystemCheck();
+
         string[] cliArgs = Environment.GetCommandLineArgs();
         AppArguments args = host.Services.GetRequiredService<AppArguments>().Map(cliArgs);
 
@@ -63,6 +69,7 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to run the application.</param>
     public static void RunApplication(this IHost host)
     {
-        // This method can be used to run the application.
+        IMainForm mainForm = host.Services.GetRequiredService<IMainForm>();
+        Application.Run((MainForm)mainForm);
     }
 }
