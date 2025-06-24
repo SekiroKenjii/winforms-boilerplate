@@ -4,3 +4,18 @@ LogonUser
 // credui.dll
 CredUIPromptForWindowsCredentials
 CredUnPackAuthenticationBuffer
+
+// user32.dll
+ShowWindow
+ReleaseCapture
+SendMessageW
+SetWindowsHookEx
+GetWindowDC
+UpdateLayeredWindow
+ReleaseDC
+UnhookWindowsHookEx
+CallNextHookEx
+GetDoubleClickTime
+GetWindowRect
+GetSystemMetrics
+GetDC

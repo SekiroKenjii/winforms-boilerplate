@@ -1,6 +1,11 @@
+using Microsoft.Extensions.DependencyInjection;
+using WinformsBoilerplate.Core.Abstractions.Components.Forms;
 using WinformsBoilerplate.Core.Abstractions.Host;
+using WinformsBoilerplate.Core.Abstractions.Services;
+using WinformsBoilerplate.Core.Abstractions.Stores;
 using WinformsBoilerplate.Core.Extensions;
 using WinformsBoilerplate.Core.Wrappers;
+using static WinformsBoilerplate.Core.Constants.Common;
 
 namespace WinformsBoilerplate.App.Handlers;
 
@@ -9,9 +14,15 @@ namespace WinformsBoilerplate.App.Handlers;
 /// </summary>
 public class ExceptionHandler : IHandler
 {
+    private ILogService? _logService;
+    private IEventStore _eventStore;
+
     /// <inheritdoc />
     public void Invoke(IServiceProvider sp)
     {
+        _logService = sp.GetRequiredService<ILogService>();
+        _eventStore = sp.GetRequiredService<IEventStore>();
+
         Application.ThreadException += MainThreadExceptionHandler;
 
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
@@ -57,8 +68,10 @@ public class ExceptionHandler : IHandler
     /// <param name="ex">The exception to handle. If null, creates a new exception with default message.</param>
     private void HandleUnexpectedException(Exception? ex)
     {
-        // Handle unexpected exceptions here
-        // For example, log the exception or show a message box
+        ex ??= new Exception(DefaultMessages.UNEXPECTED_ERROR);
+
+        _logService?.WriteStackTraceLog(ex);
+        //_eventStore?.Dispatch((IExceptionDialog x) => x.OnShowExceptionDialog, ex.ToFormattedStackTrace());
     }
 
     /// <summary>
@@ -67,7 +80,15 @@ public class ExceptionHandler : IHandler
     /// <param name="ex">The fatal exception that occurred.</param>
     private void HandleFatalException(Exception ex)
     {
-        // Handle fatal exceptions here
-        // For example, log the exception and exit the application
+        _logService?.WriteStackTraceLog(ex);
+
+        _ = MessageBox.Show(
+            DefaultMessages.FATAL_ERROR,
+            Application.ProductName,
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Stop
+        );
+
+        _eventStore?.Dispatch((IMainForm x) => x.OnShutdownApplication, false);
     }
 }

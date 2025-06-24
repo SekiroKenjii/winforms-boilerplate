@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WinformsBoilerplate.Core.Abstractions.Components;
+using WinformsBoilerplate.Core.Abstractions.Components.Forms;
 using WinformsBoilerplate.Core.Abstractions.Host;
+using WinformsBoilerplate.Core.Abstractions.Services;
 using WinformsBoilerplate.Core.Entities.Systems;
 using WinformsBoilerplate.Infrastructure.Extensions;
 
@@ -47,6 +50,9 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to bootstrap.</param>
     public static void Bootstrap(this IHost host)
     {
+        ISystemService systemService = host.Services.GetRequiredService<ISystemService>();
+        systemService.PerformSystemCheck();
+
         string[] cliArgs = Environment.GetCommandLineArgs();
         AppArguments args = host.Services.GetRequiredService<AppArguments>().Map(cliArgs);
 
@@ -63,6 +69,26 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to run the application.</param>
     public static void RunApplication(this IHost host)
     {
-        // This method can be used to run the application.
+        Run(host.Services.GetRequiredService<IMainForm>());
+    }
+
+    /// <summary>
+    /// Starts the application's message loop with the specified form instance.
+    /// </summary>
+    /// <remarks>This method verifies that the provided form instance inherits from <see
+    /// cref="System.Windows.Forms.Form"/>  before starting the application's message loop using <see
+    /// cref="System.Windows.Forms.Application.Run(Form)"/>.</remarks>
+    /// <typeparam name="T">The type of the form to run, which must implement <see cref="IForm"/> and inherit from <see
+    /// cref="System.Windows.Forms.Form"/>.</typeparam>
+    /// <param name="instance">The form instance to run. Must inherit from <see cref="System.Windows.Forms.Form"/>.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the specified form does not inherit from <see cref="System.Windows.Forms.Form"/>.</exception>
+    public static void Run<T>(T instance) where T : IForm
+    {
+        if (instance is not Form form)
+        {
+            throw new InvalidOperationException($"The form {typeof(T).Name} must inherit from System.Windows.Forms.Form.");
+        }
+
+        Application.Run(form);
     }
 }

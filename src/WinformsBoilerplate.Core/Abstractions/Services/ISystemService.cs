@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using WinformsBoilerplate.Core.Entities.Settings;
 using WinformsBoilerplate.Core.Entities.Systems;
+using WinformsBoilerplate.Core.Wrappers;
 
 namespace WinformsBoilerplate.Core.Abstractions.Services;
 
@@ -61,7 +63,7 @@ public interface ISystemService : IDisposable
     /// <summary>
     /// Saves the specified store object to the local storage.
     /// </summary>
-    /// <remarks>This method persists the provided store object to the local storage. Ensure that the object 
+    /// <remarks>This method persists the provided store object to the local storage. Ensure that the object
     /// passed is serializable and valid for storage. If the operation fails, an exception may be thrown.</remarks>
     /// <param name="store">The store object to be saved. Cannot be null.</param>
     void SaveLocalStore(object store);
@@ -77,10 +79,37 @@ public interface ISystemService : IDisposable
     ConcurrentDictionary<string, object?> ReadLocalStore();
 
     /// <summary>
-    /// Cleans up the local data store by removing obsolete or temporary files.
+    /// Checks the existence and validity of the application's configuration file.
     /// </summary>
-    /// <remarks>This method is typically used to free up disk space and ensure the local store remains in a
-    /// consistent state.  It should be called periodically or when the application determines that cleanup is
-    /// necessary.</remarks>
-    void CleanupLocalStore();
+    /// <remarks>This method verifies whether the application's configuration file is present and meets the
+    /// required format or criteria. If the file is missing or invalid, appropriate actions may need to be taken by the
+    /// caller.</remarks>
+    /// <returns>an instance of <see cref="ThrowableFunction{TOut, TException}"/> representing the result of the check.</returns>
+    ThrowableFunction<AppSettings?, Exception> CheckAppSettingFile();
+
+    /// <summary>
+    /// Creates a default settings file in the application's configuration directory.
+    /// </summary>
+    /// <remarks>If the settings file already exists and <paramref name="override"/> is <see
+    /// langword="false"/>,  the method does not modify the existing file. Ensure the application has appropriate
+    /// permissions  to write to the configuration directory.</remarks>
+    /// <param name="override">A value indicating whether to overwrite the existing settings file if it already exists. <see langword="true"/>
+    /// to overwrite the file; otherwise, <see langword="false"/>.</param>
+    /// <returns><see langword="true"/> if the default settings file was successfully created or already exists; otherwise, <see langword="false"/>.</returns>
+    bool CreateDefaultSettingFile(bool @override = false);
+
+    /// <summary>
+    /// Shuts down the application and optionally executes a callback action during the shutdown process.
+    /// </summary>
+    /// <param name="onShutdown">An optional callback action to be invoked during the shutdown.  If provided, this action will be executed before
+    /// the application terminates.  Can be <see langword="null"/> if no callback is required.</param>
+    void ShutdownApplication(Action? onShutdown = null);
+
+    /// <summary>
+    /// Restarts the application by terminating the current process and starting a new instance.
+    /// </summary>
+    /// <remarks>This method is typically used to apply configuration changes, recover from errors, or refresh the application state that require a full application restart.</remarks>
+    /// <param name="onRestart">An optional callback action to be invoked during the restart. If provided, this action will be executed before
+    /// the application starts anew. Can be <see langword="null"/> if no callback is required.</param>
+    void RestartApplication(Action? onRestart = null);
 }

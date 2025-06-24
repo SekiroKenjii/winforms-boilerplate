@@ -50,7 +50,7 @@ public class LoggerService : Disposable, ILogService
     private Logger? _freezeLogger;
 
     /// <inheritdoc/>
-    public void BindLoggerToControl<TContext>(string controlName, Logger? logger)
+    public void BindLoggerToControl<TContext>()
     {
         _ctrlLoggerCtx = _ctrlLogger?.ForContext<TContext>();
     }
