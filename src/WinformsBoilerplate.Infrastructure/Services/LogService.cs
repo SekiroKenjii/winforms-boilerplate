@@ -7,12 +7,13 @@ using WinformsBoilerplate.Core.Abstractions;
 using WinformsBoilerplate.Core.Abstractions.Services;
 using WinformsBoilerplate.Core.Constants;
 using WinformsBoilerplate.Core.Enums;
+using WinformsBoilerplate.Core.Extensions;
 using WinformsBoilerplate.Core.Helpers;
-using WinformsBoilerplate.Infrastructure.Configurations.Logger;
+using WinformsBoilerplate.Infrastructure.Configurations.Serilog;
 
 namespace WinformsBoilerplate.Infrastructure.Services;
 
-public class LoggerService : Disposable, ILogService
+public class LogService : Disposable, ILogService
 {
     /// <summary>
     /// Default template format for standard log messages.
@@ -182,7 +183,7 @@ public class LoggerService : Disposable, ILogService
     /// <inheritdoc cref="ILogService.WriteStackTraceLog(Exception)" />
     public void WriteStackTraceLog(Exception ex)
     {
-        throw new NotImplementedException();
+        _stackTraceLogger?.Error(ex.ToFormattedString());
     }
 
     /// <inheritdoc cref="Disposable.Dispose(bool)" />

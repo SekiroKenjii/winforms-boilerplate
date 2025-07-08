@@ -2,7 +2,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 
-namespace WinformsBoilerplate.Infrastructure.Configurations.Logger;
+namespace WinformsBoilerplate.Infrastructure.Configurations.Serilog;
 
 /// <summary>
 /// Provides a custom logger event interface for handling log events in a WinForms application.

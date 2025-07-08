@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
     public static void AddServices(this IServiceCollection services)
     {
         _ = services
-            .AddSingleton<ILogService, LoggerService>()
+            .AddSingleton<ILogService, LogService>()
             .AddSingleton<ISystemService, SystemService>()
             .AddSingleton<IAppSettingService, AppSettingService>()
             .AddSingleton<ILayoutService, LayoutService>();

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WinformsBoilerplate.Core.Abstractions.Components;
 using WinformsBoilerplate.Core.Abstractions.Components.Forms;
 using WinformsBoilerplate.Core.Abstractions.Host;
@@ -20,6 +21,9 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to invoke handlers on.</param>
     public static void MapHandlers(this IHost host)
     {
+        ILogger<IHost> logger = host.Services.GetRequiredService<ILogger<IHost>>();
+        logger.LogDebug("Mapping handlers...");
+
         IEnumerable<IHandler> handlers = AssemblyReference.Assembly.GetTypes()
             .Where(x => typeof(IHandler).IsAssignableFrom(x) && x.IsClass)
             .Select(Activator.CreateInstance)
@@ -27,8 +31,11 @@ public static class HostExtensions
 
         foreach (IHandler handler in handlers)
         {
+            logger.LogDebug("Invoking handler: {HandlerType}", handler.GetType().Name);
             handler.Invoke(host.Services);
         }
+
+        logger.LogDebug("Handlers mapped successfully.");
     }
 
     /// <summary>
@@ -41,7 +48,12 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to initialize modules for.</param>
     public static void InitializeModules(this IHost host)
     {
+        ILogger<IHost> logger = host.Services.GetRequiredService<ILogger<IHost>>();
+        logger.LogDebug("Initializing modules...");
+
         host.InitializeInfrastructure();
+
+        logger.LogDebug("Modules initialized successfully.");
     }
 
     /// <summary>
@@ -50,13 +62,15 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to bootstrap.</param>
     public static void Bootstrap(this IHost host)
     {
-        ILogService logService = host.Services.Resolve<ILogService>();
-        logService.Info("Bootstrapping application...");
+        ILogger<IHost> logger = host.Services.GetRequiredService<ILogger<IHost>>();
+
+        logger.LogInformation("Bootstrapping application...");
 
         ISystemService systemService = host.Services.Resolve<ISystemService>();
         systemService.PerformSystemCheck();
 
-        logService.Info("Mapping command line arguments...");
+        logger.LogDebug("Mapping command line arguments...");
+
         string[] cliArgs = Environment.GetCommandLineArgs();
         AppArguments args = host.Services.GetRequiredService<AppArguments>().Map(cliArgs);
 
@@ -65,9 +79,10 @@ public static class HostExtensions
         _ = args.DpiUnaware != null
             ? Application.SetHighDpiMode(HighDpiMode.DpiUnaware)
             : Application.SetHighDpiMode(HighDpiMode.DpiUnawareGdiScaled);
-        logService.Info($"High DPI mode set to: {Application.HighDpiMode}");
 
-        logService.Info("Application bootstrapped successfully.");
+        logger.LogDebug("High DPI mode set to: {HighDpiMode}", Application.HighDpiMode);
+
+        logger.LogInformation("Application bootstrapped successfully.");
     }
 
     /// <summary>

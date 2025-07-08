@@ -9,7 +9,6 @@ using WinformsBoilerplate.Core.Abstractions.Components.Forms;
 using WinformsBoilerplate.Core.Abstractions.Services;
 using WinformsBoilerplate.Core.Constants;
 using WinformsBoilerplate.Core.Entities.Settings;
-using WinformsBoilerplate.Core.Extensions;
 using WinformsBoilerplate.Core.Helpers;
 using WinformsBoilerplate.Core.Wrappers;
 using WinformsBoilerplate.Infrastructure.Extensions;
@@ -32,30 +31,21 @@ public static class ServiceCollectionExtensions
         services.AddStores();
     }
 
-    public static void AddLogger(this IServiceCollection _, IServiceProvider sp)
-    {
-        ILogService logService = sp.Resolve<ILogService>();
-        logService.CreateFileLoggers();
-        logService.CreateControlLogger();
-    }
-
     /// <summary>
     /// Binds application settings from a JSON file to the service collection.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to which application settings will be bound.</param>
-    public static void BindSettings(this IServiceCollection services, IServiceProvider sp)
+    public static IServiceCollection BindSettings(this IServiceCollection services)
     {
-        ILogService logService = sp.Resolve<ILogService>();
+        IServiceProvider sp = services.BuildServiceProvider();
+
         IAppSettingService appSettingService = sp.Resolve<IAppSettingService>();
         ISystemService systemService = sp.Resolve<ISystemService>();
 
-        logService.Info("Checking application settings file...");
         ThrowableFunction<AppSetting?, Exception> checkResult = systemService.CheckAppSettingFile();
 
         if (checkResult.Exception is not null)
         {
-            logService.Error($"Application settings file is corrupted or unreadable: {checkResult.Exception.ToFormattedString()}");
-
             DialogResult recoverOption = MessageBox.Show(
                 "The settings file is corrupted or unreadable.\n\n" +
                 "Select 'Try Again' to restart the application.\n" +
@@ -71,11 +61,11 @@ public static class ServiceCollectionExtensions
                 case DialogResult.Cancel:
                     // Exit the application without making any changes
                     systemService.ShutdownApplication();
-                    return;
+                    return services;
                 case DialogResult.TryAgain:
                     // Restart the application to try again
                     systemService.RestartApplication();
-                    return;
+                    return services;
                 case DialogResult.Continue:
                     // Delete the corrupted file and recreate it with default settings
                     if (!appSettingService.CreateDefaultSettingFile(true))
@@ -87,20 +77,19 @@ public static class ServiceCollectionExtensions
                             MessageBoxIcon.Error
                         );
                         systemService.ShutdownApplication();
-                        return;
+                        return services;
                     }
 
                     break;
             }
         }
 
-        logService.Info("Application settings file is valid. Binding settings...");
-
         IConfigurationRoot config = new ConfigurationBuilder()
             .SetBasePath(CommonHelpers.AppStartupPath())
             .AddJsonFile(Files.SETTING_FILE, optional: false, reloadOnChange: true)
             .Build();
-        _ = services.Configure<AppSetting>(config.GetSection(nameof(AppSetting)));
+
+        return services.Configure<AppSetting>(config.GetSection(nameof(AppSetting)));
     }
 
     /// <summary>
