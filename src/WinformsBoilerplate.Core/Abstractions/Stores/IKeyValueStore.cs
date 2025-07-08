@@ -3,7 +3,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Stores;
 /// <summary>
 /// Represents a key-value store that supports storing, retrieving, incrementing, decrementing, and removing values.
 /// </summary>
-public interface IKeyValueStore
+public interface IKeyValueStore : IDisposable, ISingletonDependency
 {
     /// <summary>
     /// Stores a value with the specified key.

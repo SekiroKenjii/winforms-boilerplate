@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
         _ = services
             .AddSingleton<ILogService, LoggerService>()
             .AddSingleton<ISystemService, SystemService>()
+            .AddSingleton<IAppSettingService, AppSettingService>()
             .AddSingleton<ILayoutService, LayoutService>();
     }
 

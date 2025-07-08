@@ -55,7 +55,7 @@ public class LoggerService : Disposable, ILogService
         _ctrlLoggerCtx = _ctrlLogger?.ForContext<TContext>();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.CreateControlLogger" />
     public void CreateControlLogger()
     {
         _ctrlLogger =
@@ -66,7 +66,7 @@ public class LoggerService : Disposable, ILogService
             .CreateLogger();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.CreateFileLoggers" />
     public void CreateFileLoggers()
     {
         string startupPath = CommonHelpers.AppStartupPath();
@@ -81,7 +81,7 @@ public class LoggerService : Disposable, ILogService
         _freezeLogger = CreateLoggerConfiguration(false, Path.Combine(freezeFolder, "app-freeze-log-.txt")).CreateLogger();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.Debug(string, int, string)" />
     public void Debug(string message, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = "unknown")
     {
         ILogger? ctrlLoggerCtx = _ctrlLoggerCtx ?? _ctrlLogger;
@@ -91,7 +91,7 @@ public class LoggerService : Disposable, ILogService
         _fileLogger?.Debug(_msg);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.Error(string, int, string)" />
     public void Error(string message, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = "unknown")
     {
         ILogger? ctrlLoggerCtx = _ctrlLoggerCtx ?? _ctrlLogger;
@@ -101,7 +101,7 @@ public class LoggerService : Disposable, ILogService
         _fileLogger?.Error(_msg);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.Fatal(string, int, string)" />
     public void Fatal(string message, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = "unknown")
     {
         ILogger? ctrlLoggerCtx = _ctrlLoggerCtx ?? _ctrlLogger;
@@ -111,7 +111,7 @@ public class LoggerService : Disposable, ILogService
         _fileLogger?.Fatal(_msg);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.GetLogger(LoggerType)" />
     public Logger? GetLogger(LoggerType loggerType)
     {
         return loggerType switch {
@@ -123,7 +123,7 @@ public class LoggerService : Disposable, ILogService
         };
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.Info(string, int, string)" />
     public void Info(string message, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = "unknown")
     {
         ILogger? ctrlLoggerCtx = _ctrlLoggerCtx ?? _ctrlLogger;
@@ -133,7 +133,7 @@ public class LoggerService : Disposable, ILogService
         _fileLogger?.Information(_msg);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.Verbose(string, int, string)" />
     public void Verbose(string message, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = "unknown")
     {
         ILogger? ctrlLoggerCtx = _ctrlLoggerCtx ?? _ctrlLogger;
@@ -143,7 +143,7 @@ public class LoggerService : Disposable, ILogService
         _fileLogger?.Verbose(_msg);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.Warn(string, int, string)" />
     public void Warn(string message, [CallerLineNumber] int line = 0, [CallerMemberName] string caller = "unknown")
     {
         ILogger? ctrlLoggerCtx = _ctrlLoggerCtx ?? _ctrlLogger;
@@ -153,7 +153,7 @@ public class LoggerService : Disposable, ILogService
         _fileLogger?.Warning(_msg);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.WriteLog(LogEventLevel, string)" />
     public void WriteLog(LogEventLevel logLevel, string message)
     {
         switch (logLevel)
@@ -179,12 +179,13 @@ public class LoggerService : Disposable, ILogService
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ILogService.WriteStackTraceLog(Exception)" />
     public void WriteStackTraceLog(Exception ex)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc cref="Disposable.Dispose(bool)" />
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);

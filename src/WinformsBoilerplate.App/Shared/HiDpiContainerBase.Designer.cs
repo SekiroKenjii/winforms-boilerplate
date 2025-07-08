@@ -1,6 +1,6 @@
 namespace WinformsBoilerplate.App.Shared;
 
-partial class BaseHiDpiForm
+partial class HiDpiContainerBase
 {
     /// <summary>
     /// Required designer variable.
@@ -29,15 +29,15 @@ partial class BaseHiDpiForm
     private void InitializeComponent()
     {
         SuspendLayout();
-        // 
-        // BaseHiDpiForm
-        // 
+        //
+        // HiDpiContainerBase
+        //
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
         ClientSize = new Size(200, 0);
-        Font = new Font("Inter 18pt 18pt", 10F);
-        Name = "BaseHiDpiForm";
-        Text = "BaseHiDpiForm";
+        Font = new Font("Inter", 10F);
+        Name = "HiDpiContainerBase";
+        Text = "HiDpiContainerBase";
         ResumeLayout(false);
     }
 

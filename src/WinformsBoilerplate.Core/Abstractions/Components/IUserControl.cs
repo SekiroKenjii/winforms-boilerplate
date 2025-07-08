@@ -1,10 +1,10 @@
 namespace WinformsBoilerplate.Core.Abstractions.Components;
 
 /// <summary>
-/// Defines a reusable, self-contained UI component that can host child controls and
-/// participate in layout and rendering logic within a form or container.
+/// Represents a user interface control that can host child controls and participate in layout and rendering logic.
 /// </summary>
-/// <remarks>This interface combines the capabilities of <see cref="IControl"/>, <see cref="IContainerControl"/>, 
-/// and <see cref="IComponentEvent"/> to provide a unified contract for user interface controls  that manage child
-/// components, handle events, and interact with the control hierarchy.</remarks>
-public interface IUserControl : IControl, IContainerControl, IComponentEvent;
+/// <remarks>
+/// This interface extends <see cref="IControl"/> and <see cref="IContainerControl"/> to provide a unified
+/// interface for user controls in a UI framework.
+/// </remarks>
+public interface IUserControl : IControl, IContainerControl, ITransientDependency { }

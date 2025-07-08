@@ -50,9 +50,13 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to bootstrap.</param>
     public static void Bootstrap(this IHost host)
     {
-        ISystemService systemService = host.Services.GetRequiredService<ISystemService>();
+        ILogService logService = host.Services.Resolve<ILogService>();
+        logService.Info("Bootstrapping application...");
+
+        ISystemService systemService = host.Services.Resolve<ISystemService>();
         systemService.PerformSystemCheck();
 
+        logService.Info("Mapping command line arguments...");
         string[] cliArgs = Environment.GetCommandLineArgs();
         AppArguments args = host.Services.GetRequiredService<AppArguments>().Map(cliArgs);
 
@@ -61,6 +65,9 @@ public static class HostExtensions
         _ = args.DpiUnaware != null
             ? Application.SetHighDpiMode(HighDpiMode.DpiUnaware)
             : Application.SetHighDpiMode(HighDpiMode.DpiUnawareGdiScaled);
+        logService.Info($"High DPI mode set to: {Application.HighDpiMode}");
+
+        logService.Info("Application bootstrapped successfully.");
     }
 
     /// <summary>
@@ -69,7 +76,7 @@ public static class HostExtensions
     /// <param name="host">The <see cref="IHost"/> instance to run the application.</param>
     public static void RunApplication(this IHost host)
     {
-        Run(host.Services.GetRequiredService<IMainForm>());
+        Run(host.Services.Resolve<IMainForm>());
     }
 
     /// <summary>

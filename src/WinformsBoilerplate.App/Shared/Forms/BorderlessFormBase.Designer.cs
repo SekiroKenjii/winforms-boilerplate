@@ -1,6 +1,6 @@
-namespace WinformsBoilerplate.App.Shared.Forms;
+﻿namespace WinformsBoilerplate.App.Shared.Forms;
 
-partial class BaseStandardForm
+partial class BorderlessFormBase
 {
     /// <summary>
     /// Required designer variable.
@@ -29,14 +29,19 @@ partial class BaseStandardForm
     private void InitializeComponent()
     {
         SuspendLayout();
-        // 
-        // BaseStandardForm
-        // 
+        //
+        // BorderlessFormBase
+        //
         AutoScaleDimensions = new SizeF(96F, 96F);
         ClientSize = new Size(1280, 720);
         DoubleBuffered = true;
-        Name = "BaseStandardForm";
-        Text = "BaseStandardForm";
+        FormBorderStyle = FormBorderStyle.None;
+        MaximizeBox = false;
+        MdiChildrenMinimizedAnchorBottom = false;
+        MinimizeBox = false;
+        ShowIcon = false;
+        Name = "BorderlessFormBase";
+        Text = "BorderlessFormBase";
         ResumeLayout(false);
     }
 

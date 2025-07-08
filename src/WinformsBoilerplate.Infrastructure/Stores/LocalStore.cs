@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using WinformsBoilerplate.Core.Abstractions;
 using WinformsBoilerplate.Core.Abstractions.Services;
 using WinformsBoilerplate.Core.Abstractions.Stores;
 using WinformsBoilerplate.Core.Extensions;
@@ -8,7 +9,7 @@ using WinformsBoilerplate.Core.Wrappers;
 
 namespace WinformsBoilerplate.Infrastructure.Stores;
 
-public class LocalStore : ILocalStore
+public class LocalStore : Disposable, ILocalStore
 {
     private readonly ILogService _logService;
     private readonly ISystemService _systemService;
@@ -22,6 +23,7 @@ public class LocalStore : ILocalStore
         _store = _systemService.ReadLocalStore();
     }
 
+    /// <inheritdoc cref="IKeyValueStore.Set{T}(string, T)"/>
     public void Set<T>(string key, T value)
     {
         _ = _store.AddOrUpdate(key, value, (_, _) => value);
@@ -29,6 +31,7 @@ public class LocalStore : ILocalStore
         _systemService.SaveLocalStore(_store);
     }
 
+    /// <inheritdoc cref="IKeyValueStore.Clear"/>
     public void Clear()
     {
         _store.Clear();
@@ -36,6 +39,7 @@ public class LocalStore : ILocalStore
         _systemService.SaveLocalStore(_store);
     }
 
+    /// <inheritdoc cref="IKeyValueStore.Get{T}(string)"/>
     public T? Get<T>(string key)
     {
         object? value = _store.GetValueOrDefault(key);
@@ -65,6 +69,7 @@ public class LocalStore : ILocalStore
         return value is not T result ? default : result;
     }
 
+    /// <inheritdoc cref="IKeyValueStore.Remove(string)"/>
     public void Remove(string key)
     {
         _ = _store.Remove(key, out object? _);
@@ -72,9 +77,9 @@ public class LocalStore : ILocalStore
         _systemService.SaveLocalStore(_store);
     }
 
+    /// <inheritdoc cref="ILocalStore.Cleanup"/>
     public void Cleanup()
     {
-        // Implement cleanup logic here
         _logService.Info("Cleaning up local store...");
 
         ThrowableAction
@@ -94,5 +99,23 @@ public class LocalStore : ILocalStore
                 _logService.Warn("Local store directory does not exist. No cleanup needed.");
             })
             .Catch(ex => _logService.Error($"Error during local store cleanup: {ex.ToFormattedString()}"));
+    }
+
+    /// <inheritdoc cref="Disposable.Dispose(bool)" />
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (Disposed)
+        {
+            return;
+        }
+
+        foreach (string key in _store.Keys)
+        {
+            _store[key] = null;
+        }
+
+        _store.Clear();
     }
 }

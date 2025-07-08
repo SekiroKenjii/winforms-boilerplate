@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
+using WinformsBoilerplate.Core.Abstractions;
 using WinformsBoilerplate.Core.Abstractions.Stores;
 
 namespace WinformsBoilerplate.Infrastructure.Stores;
 
-public class SessionStore : ISessionStore
+public class SessionStore : Disposable, ISessionStore
 {
     private readonly ConcurrentDictionary<string, object?> _store = [];
 
@@ -47,5 +48,23 @@ public class SessionStore : ISessionStore
         int currentCommitCount = Get<int>(key);
 
         Set(key, currentCommitCount - value);
+    }
+
+    /// <inheritdoc cref="Disposable.Dispose(bool)" />
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (Disposed)
+        {
+            return;
+        }
+
+        foreach (string key in _store.Keys)
+        {
+            _store[key] = null;
+        }
+
+        _store.Clear();
     }
 }

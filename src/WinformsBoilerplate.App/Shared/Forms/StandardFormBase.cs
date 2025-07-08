@@ -6,12 +6,12 @@ namespace WinformsBoilerplate.App.Shared.Forms;
 /// Represents a standard form that provides high DPI support for Windows Forms applications.
 /// </summary>
 /// <remarks>
-/// This class extends the <see cref="BaseHiDpiForm"/> class to inherit functionality for adjusting controls and menu items
+/// This class extends the <see cref="HiDpiContainerBase"/> class to inherit functionality for adjusting controls and menu items
 /// to high DPI settings. It serves as a base form for other forms that require high DPI support.
 /// </remarks>
-public partial class BaseStandardForm : BaseHiDpiForm, IForm
+public partial class StandardFormBase : HiDpiContainerBase, IForm
 {
-    public BaseStandardForm()
+    public StandardFormBase()
     {
         InitializeComponent();
 
@@ -21,8 +21,8 @@ public partial class BaseStandardForm : BaseHiDpiForm, IForm
         Disposed += (_, _) => DisposeUnmanagedResources();
     }
 
-    /// <inheritdoc cref="IComponentEvent.InitializeFormEvents" />
-    public virtual void InitializeFormEvents()
+    /// <inheritdoc cref="IComponentEvent.InitializeComponentEvents" />
+    public virtual void InitializeComponentEvents()
     {
         // Implement in derived class
     }

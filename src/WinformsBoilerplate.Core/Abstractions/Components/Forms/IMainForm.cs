@@ -9,7 +9,7 @@ public interface IMainForm : IForm
 {
     /// <summary>
     /// Occurs when the application is requested to shut down.
-    /// The boolean parameter indicates whether to force the shutdown (true) or perform a graceful exit (false).
+    /// The boolean parameter indicates whether to restart the application (true) or perform a graceful exit (false).
     /// </summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     Action<bool>? OnShutdownApplication { get; set; }

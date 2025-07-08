@@ -1,26 +1,17 @@
 using System.ComponentModel;
 
-namespace WinformsBoilerplate.Core.Abstractions.Components;
+namespace WinformsBoilerplate.Core.Abstractions.Components.Controls;
 
 /// <summary>
 /// Defines methods and properties for managing an overlay control.
 /// </summary>
-/// <remarks>This interface provides functionality to display and hide overlay controls within a parent control.
-/// Implementations of this interface should handle overlay-specific behavior, such as rendering and managing visibility
-/// states.</remarks>
-public interface IOverlayControl : IControl
+public interface IOverlayControl : IControl, ITransientDependency
 {
     /// <summary>
-    /// Gets or sets a value indicating whether the component is visible.
+    /// Gets or sets the text to be displayed center-aligned on the overlay.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    bool Visible { get; set; }
-
-    /// <summary>
-    /// Gets or sets the text displayed as an overlay label.
-    /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    string OverlayLabelText { get; set; }
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+    string OverlayText { get; set; }
 
     /// <summary>
     /// Displays an overlay on the specified parent control.

@@ -8,7 +8,7 @@ using WinformsBoilerplate.Core.Win32.Components;
 
 namespace WinformsBoilerplate.App.Shared.Forms;
 
-public partial class BaseBorderlessForm : BaseHiDpiForm, IForm
+public partial class BorderlessFormBase : HiDpiContainerBase, IForm
 {
     private const int GRIP_SIZE = 4;
 
@@ -16,7 +16,7 @@ public partial class BaseBorderlessForm : BaseHiDpiForm, IForm
     protected int TopPanelHeight = 0;
 
 
-    public BaseBorderlessForm()
+    public BorderlessFormBase()
     {
         InitializeComponent();
 
@@ -208,8 +208,8 @@ public partial class BaseBorderlessForm : BaseHiDpiForm, IForm
         User32.SendMessage(Handle, WindowMessage.NCLButtonDown, (int)HitTest.Caption, 0);
     }
 
-    /// <inheritdoc cref="IComponentEvent.InitializeFormEvents" />
-    public virtual void InitializeFormEvents()
+    /// <inheritdoc cref="IComponentEvent.InitializeComponentEvents" />
+    public virtual void InitializeComponentEvents()
     {
         // Implement in derived class
     }

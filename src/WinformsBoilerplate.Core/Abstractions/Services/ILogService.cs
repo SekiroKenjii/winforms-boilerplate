@@ -13,7 +13,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Services;
 /// levels, and handling exceptions through stack trace logging. It supports binding loggers to UI controls and provides
 /// contextual information such as caller member names and line numbers for enhanced debugging.
 /// </remarks>
-public interface ILogService : IDisposable
+public interface ILogService : IDisposable, ISingletonDependency
 {
     /// <summary>
     /// Retrieves a logger instance based on the specified logger type.

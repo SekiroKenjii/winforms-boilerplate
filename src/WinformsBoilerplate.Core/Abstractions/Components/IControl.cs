@@ -23,31 +23,37 @@ public interface IControl : IComponent
     /// <summary>
     /// Gets or sets the name used to identify this control within a collection or designer environment.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the internal spacing between the edges of the control and its content.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     Padding Padding { get; set; }
 
     /// <summary>
     /// Gets or sets the width of the control in pixels.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     int Width { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the control is visible.
+    /// </summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+    bool Visible { get; set; }
 
     /// <summary>
     /// Gets or sets the height of the control in pixels.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     int Height { get; set; }
 
     /// <summary>
     /// Gets or sets the text displayed on or associated with this control.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     string Text { get; set; }
 
     /// <summary>
@@ -73,4 +79,3 @@ public interface IControl : IComponent
     /// </summary>
     void Invalidate();
 }
-

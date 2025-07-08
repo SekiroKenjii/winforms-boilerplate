@@ -106,6 +106,7 @@ partial class MainForm
         ntySysTray.ContextMenuStrip = cmsSysTray;
         ntySysTray.Icon = (Icon)resources.GetObject("ntySysTray.Icon");
         ntySysTray.Text = "Application Name";
+        ntySysTray.DoubleClick += NtySysTray_DoubleClick;
         // 
         // cmsSysTray
         // 
@@ -141,9 +142,6 @@ partial class MainForm
         MainMenuStrip = mnuMain;
         Name = "MainForm";
         Text = "Application Name";
-        FormClosing += MainForm_FormClosing;
-        Load += MainForm_Load;
-        Shown += MainForm_Shown;
         mnuMain.ResumeLayout(false);
         mnuMain.PerformLayout();
         cmsSysTray.ResumeLayout(false);

@@ -25,6 +25,13 @@ internal static class Program
             return;
         }
 
+        if (AssemblyHelpers.DetectCurrentInstance())
+        {
+            // TODO: Implement a mechanism to handle multiple instances if needed
+
+            return;
+        }
+
         AssemblyHelpers.ResolveCurrentDomainAssembly();
 
         IHost host = CreateHostBuilder().Build();
@@ -45,7 +52,11 @@ internal static class Program
             .ConfigureServices((context, services) => {
                 services.AddSingleton<AppArguments>()
                         .AddInfrastructure();
-                services.BindSettings();
+
+                IServiceProvider sp = services.BuildServiceProvider();
+
+                services.AddLogger(sp);
+                services.BindSettings(sp);
                 services.AddComponents();
             });
     }

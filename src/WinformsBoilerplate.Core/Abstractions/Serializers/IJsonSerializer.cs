@@ -3,7 +3,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Serializers;
 /// <summary>
 /// Represents a JSON serializer interface.
 /// </summary>
-public interface IJsonSerializer
+public interface IJsonSerializer : ISingletonDependency
 {
     /// <summary>
     /// Serializes the specified object into a string representation.

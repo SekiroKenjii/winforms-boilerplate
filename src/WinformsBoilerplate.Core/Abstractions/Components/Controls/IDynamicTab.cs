@@ -17,7 +17,7 @@ public interface IDynamicTab : ITabControl
     /// <summary>
     /// Gets or sets the color of the border surrounding the tab control.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     Color BorderColor { get; set; }
 
     /// <summary>
