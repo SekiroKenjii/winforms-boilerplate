@@ -2,7 +2,7 @@ using Serilog;
 using Serilog.Formatting;
 using Serilog.Formatting.Display;
 
-namespace WinformsBoilerplate.Infrastructure.Configurations.Logger;
+namespace WinformsBoilerplate.Infrastructure.Configurations.Serilog;
 
 /// <summary>
 /// Provides custom logging configurations for the application.

@@ -3,9 +3,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Components;
 /// <summary>
 /// Represents a dialog control that provides functionality for user interaction within a graphical user interface.
 /// </summary>
-/// <remarks>A dialog is typically used to display information, prompt the user for input, or facilitate specific
-/// tasks. Implementations of this interface may include modal or non-modal dialogs, and can support various types of
-/// user interactions.</remarks>
+/// <remarks>A dialog will be registered into service collection for dependency injection as <c>singleton lifetime</c>.</remarks>
 public interface IDialog : IControl, IComponentEvent
 {
     /// <summary>

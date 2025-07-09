@@ -9,7 +9,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Services;
 /// <summary>
 /// Defines a contract for system-level services within the application.
 /// </summary>
-public interface ISystemService : IDisposable
+public interface ISystemService : IDisposable, ISingletonDependency
 {
     /// <summary>
     /// Gets a value indicating whether the current user has administrator privileges.
@@ -85,18 +85,7 @@ public interface ISystemService : IDisposable
     /// required format or criteria. If the file is missing or invalid, appropriate actions may need to be taken by the
     /// caller.</remarks>
     /// <returns>an instance of <see cref="ThrowableFunction{TOut, TException}"/> representing the result of the check.</returns>
-    ThrowableFunction<AppSettings?, Exception> CheckAppSettingFile();
-
-    /// <summary>
-    /// Creates a default settings file in the application's configuration directory.
-    /// </summary>
-    /// <remarks>If the settings file already exists and <paramref name="override"/> is <see
-    /// langword="false"/>,  the method does not modify the existing file. Ensure the application has appropriate
-    /// permissions  to write to the configuration directory.</remarks>
-    /// <param name="override">A value indicating whether to overwrite the existing settings file if it already exists. <see langword="true"/>
-    /// to overwrite the file; otherwise, <see langword="false"/>.</param>
-    /// <returns><see langword="true"/> if the default settings file was successfully created or already exists; otherwise, <see langword="false"/>.</returns>
-    bool CreateDefaultSettingFile(bool @override = false);
+    ThrowableFunction<AppSetting?, Exception> CheckAppSettingFile();
 
     /// <summary>
     /// Shuts down the application and optionally executes a callback action during the shutdown process.

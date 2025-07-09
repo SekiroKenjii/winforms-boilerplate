@@ -1,3 +1,4 @@
+using WinformsBoilerplate.Core.Abstractions.Components;
 using WinformsBoilerplate.Core.Entities.Systems;
 
 namespace WinformsBoilerplate.Core.Abstractions.Stores;
@@ -5,7 +6,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Stores;
 /// <summary>
 /// Defines a contract for managing event-related teardown logic storage and execution.
 /// </summary>
-public interface IEventStore : IDispatchable
+public interface IEventStore : IDispatchable, IDisposable, ISingletonDependency
 {
     /// <summary>
     /// Adds a collection of teardown logic entries associated with a specific target object to the store.
@@ -15,7 +16,7 @@ public interface IEventStore : IDispatchable
     /// <remarks>
     /// This method is typically used for adding multiple teardown logics at once.
     /// </remarks>
-    void Add<T>(params ReadOnlySpan<TeardownLogic> teardownLogics) where T : class;
+    void Add<T>(params ReadOnlySpan<TeardownLogic> teardownLogics) where T : IComponentEvent;
 
     /// <summary>
     /// Adds a single teardown logic entry associated with a specific target object to the store.
@@ -26,7 +27,7 @@ public interface IEventStore : IDispatchable
     /// <remarks>
     /// This method is typically used for adding a single teardown logic entry.
     /// </remarks>
-    void Add<T>(string action, Delegate eventHandler) where T : class;
+    void Add<T>(string action, Delegate eventHandler) where T : IComponentEvent;
 
     /// <summary>
     /// Flushes all teardown logic entries for a specific target object.
@@ -35,7 +36,7 @@ public interface IEventStore : IDispatchable
     /// <remarks>
     /// This method is typically used to clear all teardown logics for the specified entity type.
     /// </remarks>
-    void Flush<T>();
+    void Flush<T>() where T : IComponentEvent;
 
     /// <summary>
     /// Flushes all teardown logic entries for all target objects.

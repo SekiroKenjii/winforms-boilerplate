@@ -2,7 +2,7 @@ using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 
-namespace WinformsBoilerplate.Infrastructure.Configurations.Logger;
+namespace WinformsBoilerplate.Infrastructure.Configurations.Serilog;
 
 /// <summary>
 /// Provides a custom logger event interface for handling log events in a WinForms application.
@@ -22,13 +22,13 @@ public interface ICustomLoggerEvent : ILogEventSink
 
 public class CustomLoggerEvent(ITextFormatter textFormatter, bool isGridLogger = false) : ICustomLoggerEvent
 {
-    /// <inheritdoc />
+    /// <inheritdoc cref="ICustomLoggerEvent.OnRichTextBoxLogReceived" />
     public Action<string, string>? OnRichTextBoxLogReceived { get; set; }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ICustomLoggerEvent.OnDataGridViewLogReceived" />
     public Action<DateTimeOffset, LogEventLevel, string>? OnDataGridViewLogReceived { get; set; }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ILogEventSink.Emit(LogEvent)" />
     public void Emit(LogEvent logEvent)
     {
         ArgumentNullException.ThrowIfNull(logEvent);

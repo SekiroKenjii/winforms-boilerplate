@@ -13,13 +13,13 @@ public class DefaultSerializer : IJsonSerializer
         WriteIndented = true
     };
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IJsonSerializer.Serialize{T}(T)" />
     public string Serialize<T>(T obj)
     {
         return JsonSerializer.Serialize(obj, _options);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IJsonSerializer.Deserialize{T}(string)" />
     public T? Deserialize<T>(string data)
     {
         return JsonSerializer.Deserialize<T>(data, _options);

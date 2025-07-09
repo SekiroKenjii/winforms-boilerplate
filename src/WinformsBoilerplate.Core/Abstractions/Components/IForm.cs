@@ -6,4 +6,4 @@ namespace WinformsBoilerplate.Core.Abstractions.Components;
 /// <remarks>This interface defines the contract for a form in a UI framework, enabling the management of controls
 /// and interaction with component events. Implementations of <see cref="IForm"/> typically provide functionality  for
 /// rendering, layout management, and event handling.</remarks>
-public interface IForm : IControl, IComponentEvent;
+public interface IForm : IControl, IComponentEvent { }

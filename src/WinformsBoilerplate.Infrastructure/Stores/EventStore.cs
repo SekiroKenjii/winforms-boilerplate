@@ -14,10 +14,10 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
     /// Internal storage for event subscriptions. Maps action names to tuples containing weak references of target objects
     /// and their corresponding event handlers.
     /// </summary>
-    private readonly Dictionary<string, (Type, Delegate)> _store = [];
+    private readonly Dictionary<string, object> _store = [];
 
     /// <inheritdoc cref="IEventStore.Add{T}(ReadOnlySpan{TeardownLogic})" />
-    public void Add<T>(params ReadOnlySpan<TeardownLogic> teardownLogics) where T : class
+    public void Add<T>(params ReadOnlySpan<TeardownLogic> teardownLogics) where T : IComponentEvent
     {
         T target = sp.GetRequiredService<T>();
 
@@ -28,36 +28,36 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
 
             Subscribe(target, teardownLogic);
 
-            _store.Add(teardownLogic.ActionName, (typeof(T), teardownLogic.EventHandler));
+            _store.Add(teardownLogic.ActionName, target);
         }
     }
 
     /// <inheritdoc cref="IEventStore.Add{T}(string, Delegate)" />
-    public void Add<T>(string action, Delegate eventHandler) where T : class
+    public void Add<T>(string action, Delegate eventHandler) where T : IComponentEvent
     {
         T target = sp.GetRequiredService<T>();
 
         Subscribe(target, action, eventHandler);
 
-        _store.Add(action, (typeof(T), eventHandler));
+        _store.Add(action, target);
     }
 
     /// <inheritdoc cref="IEventStore.Flush{T}()" />
-    public void Flush<T>()
+    public void Flush<T>() where T : IComponentEvent
     {
         string[] keys = [.. _store.Keys];
 
         for (int i = keys.Length - 1; i >= 0; i--)
         {
             string scopeName = keys[i];
-            (Type targetType, _) = _store[scopeName];
+            object target = _store[scopeName];
 
-            if (targetType != typeof(T))
+            if (target.GetType() != typeof(T))
             {
                 continue;
             }
 
-            Unsubscribe(scopeName, targetType);
+            Unsubscribe(scopeName, target);
 
             _ = _store.Remove(scopeName);
         }
@@ -66,9 +66,9 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
     /// <inheritdoc cref="IEventStore.Flush()" />
     public void Flush()
     {
-        foreach ((string name, (Type targetType, _)) in _store)
+        foreach ((string name, object target) in _store)
         {
-            Unsubscribe(name, targetType);
+            Unsubscribe(name, target);
         }
 
         _store.Clear();
@@ -77,11 +77,9 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
     /// <inheritdoc cref="Dispatchable.GetTarget{TEvent}(string)" />
     protected override object? GetTarget<TEvent>(string action)
     {
-        if (_store.TryGetValue(action, out (Type, Delegate) target))
+        if (_store.TryGetValue(action, out object? target))
         {
-            (Type targetType, _) = target;
-
-            return sp.GetService(targetType);
+            return target;
         }
 
         TEvent? eventInstance = sp.GetService<TEvent>();
@@ -91,7 +89,7 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
             return null;
         }
 
-        componentEvent.InitializeFormEvents();
+        componentEvent.InitializeComponentEvents();
 
         return componentEvent;
     }
@@ -139,11 +137,23 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
     /// the service provider. If the property is not found or the target object cannot be resolved, no action is
     /// taken.</remarks>
     /// <param name="name">The name of the property to unsubscribe from. This parameter is case-insensitive.</param>
-    /// <param name="targetType">The type of the target object containing the property to unsubscribe.</param>
-    private void Unsubscribe(string name, Type targetType)
+    /// <param name="target">The target object containing the property to unsubscribe.</param>
+    private static void Unsubscribe(string name, object target)
     {
-        object? target = sp.GetService(targetType);
         PropertyInfo? property = target?.GetType().FindPropertyInfoByName(name, ignoreCase: true);
         property?.SetValue(target, null);
+    }
+
+    /// <inheritdoc cref="IDisposable.Dispose(bool)" />
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (Disposed)
+        {
+            return;
+        }
+
+        Flush();
     }
 }

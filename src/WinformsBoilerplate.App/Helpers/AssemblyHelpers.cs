@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using WinformsBoilerplate.Core.Constants;
 
 namespace WinformsBoilerplate.App.Helpers;
 
@@ -58,6 +59,20 @@ public static class AssemblyHelpers
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Determines whether another instance of the application is already running.
+    /// </summary>
+    /// <remarks>This method uses a named mutex to check for the presence of another instance of the
+    /// application. The name of the mutex is defined by <see cref="Common.APP_UNIQUE_NAME"/>.</remarks>
+    /// <returns><see langword="true"/> if another instance of the application is currently running;  otherwise, <see
+    /// langword="false"/>.</returns>
+    public static bool DetectCurrentInstance()
+    {
+        using var mutex = new Mutex(true, Common.APP_UNIQUE_NAME, out bool createdNew);
+
+        return !createdNew;
     }
 
     /// <summary>

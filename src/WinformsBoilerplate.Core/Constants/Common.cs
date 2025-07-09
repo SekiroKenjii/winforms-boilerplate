@@ -4,6 +4,8 @@ namespace WinformsBoilerplate.Core.Constants;
 
 public static class Common
 {
+    public const string APP_UNIQUE_NAME = "Global_Unique_Name_2DA1CE79-B3FA-4F7E-86FA-9E3583F573EB_WinformsBoilerplate";
+
     public static class Attributes
     {
         public const BindingFlags BINDING_FLAGS = BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public;

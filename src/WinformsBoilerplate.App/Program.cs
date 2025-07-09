@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WinformsBoilerplate.App.Extensions;
 using WinformsBoilerplate.App.Helpers;
 using WinformsBoilerplate.Core.Entities.Systems;
+using WinformsBoilerplate.Infrastructure.Logging;
 
 namespace WinformsBoilerplate.App;
 
@@ -25,9 +27,16 @@ internal static class Program
             return;
         }
 
+        if (AssemblyHelpers.DetectCurrentInstance())
+        {
+            // TODO: Implement a mechanism to handle multiple instances if needed
+
+            return;
+        }
+
         AssemblyHelpers.ResolveCurrentDomainAssembly();
 
-        IHost host = CreateHostBuilder().Build();
+        IHost host = BuildAppHost();
 
         host.MapHandlers();
         host.InitializeModules();
@@ -36,17 +45,39 @@ internal static class Program
     }
 
     /// <summary>
-    /// Creates a host builder for the application.
+    /// Builds and configures an <see cref="IHost"/> for the application.
     /// </summary>
-    /// <returns>A program initialization builder for the application.</returns>
-    static IHostBuilder CreateHostBuilder()
+    /// <returns>An <see cref="IHost"/> instance that represents the configured application host.</returns>
+    static IHost BuildAppHost()
     {
-        return Host.CreateDefaultBuilder()
-            .ConfigureServices((context, services) => {
-                services.AddSingleton<AppArguments>()
-                        .AddInfrastructure();
-                services.BindSettings();
-                services.AddComponents();
+        HostApplicationBuilder app = Host.CreateApplicationBuilder();
+
+        app.Services
+            .AddSingleton<AppArguments>()
+            .AddInfrastructure();
+
+        app.Logging
+            .ClearProviders()
+            .SetMinimumLevel(LogLevel.Information)
+            .AddLogService(options => {
+                if (!app.Environment.IsProduction())
+                {
+                    options.MinimumLogLevel = LogLevel.Debug;
+                    options.LogLevelOverrides.Add("Microsoft", LogLevel.Debug);
+                    options.LogLevelOverrides.Add("System", LogLevel.Debug);
+
+                    return;
+                }
+
+                options.MinimumLogLevel = LogLevel.Warning;
+                options.LogLevelOverrides.Add("Microsoft", LogLevel.Warning);
+                options.LogLevelOverrides.Add("System", LogLevel.Warning);
             });
+
+        app.Services
+            .BindSettings()
+            .AddComponents();
+
+        return app.Build();
     }
 }

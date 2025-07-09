@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using WinformsBoilerplate.Core.Abstractions.Components;
 using WinformsBoilerplate.Core.Extensions;
 using WinformsBoilerplate.Core.Wrappers;
 
@@ -8,10 +9,10 @@ namespace WinformsBoilerplate.Core.Abstractions;
 /// <summary>
 /// Provides a base implementation for dispatching actions with varying numbers of parameters.
 /// </summary>
-public abstract class Dispatchable : IDispatchable
+public abstract class Dispatchable : Disposable, IDispatchable
 {
     /// <inheritdoc/>
-    public void Dispatch<TEvent>(Expression<Func<TEvent, Action?>> action)
+    public void Dispatch<TEvent>(Expression<Func<TEvent, Action?>> action) where TEvent : IComponentEvent
     {
         ThrowableAction.Run(() => {
             Action? eventAction = GetEventAction<TEvent, Action>(GetActionName(action));
@@ -19,7 +20,7 @@ public abstract class Dispatchable : IDispatchable
         }).Catch();
     }
 
-    public void Dispatch<TEvent>(Expression<Func<TEvent, Func<Task>?>> action)
+    public void Dispatch<TEvent>(Expression<Func<TEvent, Func<Task>?>> action) where TEvent : IComponentEvent
     {
         ThrowableAction.Run(() => {
             Func<Task>? eventAction = GetEventAction<TEvent, Func<Task>>(GetActionName(action));
@@ -29,6 +30,7 @@ public abstract class Dispatchable : IDispatchable
 
     /// <inheritdoc/>
     public void Dispatch<TEvent, TParam>(Expression<Func<TEvent, Action<TParam>?>> action, TParam param)
+        where TEvent : IComponentEvent
     {
         ThrowableAction.Run(() => {
             Action<TParam>? eventAction = GetEventAction<TEvent, Action<TParam>>(GetActionName(action));
@@ -40,7 +42,7 @@ public abstract class Dispatchable : IDispatchable
     public void Dispatch<TEvent, TParam1, TParam2>(
         Expression<Func<TEvent, Action<TParam1, TParam2>?>> action,
         TParam1 param1,
-        TParam2 param2)
+        TParam2 param2) where TEvent : IComponentEvent
     {
         ThrowableAction.Run(() => {
             Action<TParam1, TParam2>? eventAction =
@@ -54,7 +56,7 @@ public abstract class Dispatchable : IDispatchable
         Expression<Func<TEvent, Action<TParam1, TParam2, TParam3>?>> action,
         TParam1 param1,
         TParam2 param2,
-        TParam3 param3)
+        TParam3 param3) where TEvent : IComponentEvent
     {
         ThrowableAction.Run(() => {
             Action<TParam1, TParam2, TParam3>? eventAction =
@@ -68,7 +70,7 @@ public abstract class Dispatchable : IDispatchable
     /// </summary>
     /// <param name="action">The name of the action to retrieve the target for.</param>
     /// <returns>The target object, or null if not found.</returns>
-    protected abstract object? GetTarget<TEvent>(string action);
+    protected abstract object? GetTarget<TEvent>(string action) where TEvent : IComponentEvent;
 
     /// <summary>
     /// Extracts the action name from an expression that represents a property access.
@@ -94,11 +96,13 @@ public abstract class Dispatchable : IDispatchable
     /// <param name="action">The name of the action to retrieve.</param>
     /// <returns>The action delegate, or null if not found.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the action name is null, or when no target is found for the action.</exception>
-    private TAction? GetEventAction<TEvent, TAction>(string action)
+    private TAction? GetEventAction<TEvent, TAction>(string action) where TEvent : IComponentEvent
     {
         ArgumentNullException.ThrowIfNull(action);
+
         object? target = GetTarget<TEvent>(action);
         ArgumentNullException.ThrowIfNull(target);
+
         PropertyInfo? property = target.GetType().FindPropertyInfoByName(action, ignoreCase: true);
 
         return (TAction?)property?.GetValue(target);

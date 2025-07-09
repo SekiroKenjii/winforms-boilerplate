@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using WinformsBoilerplate.Core.Abstractions.Components;
 
 namespace WinformsBoilerplate.Core.Abstractions;
 
@@ -17,7 +18,7 @@ public interface IDispatchable
     /// The <paramref name="action"/> expression must resolve to a valid action within the specified
     /// event type. This method invokes the action, allowing dynamic event dispatching.
     /// </remarks>
-    void Dispatch<TEvent>(Expression<Func<TEvent, Action?>> action);
+    void Dispatch<TEvent>(Expression<Func<TEvent, Action?>> action) where TEvent : IComponentEvent;
 
     /// <summary>
     /// Dispatches an event by invoking the specified action with the provided parameters.
@@ -29,7 +30,7 @@ public interface IDispatchable
     /// The <paramref name="action"/> expression must resolve to a valid action within the specified
     /// event type. This method invokes the action, allowing dynamic event dispatching.
     /// </remarks>
-    void Dispatch<TEvent>(Expression<Func<TEvent, Func<Task>?>> action);
+    void Dispatch<TEvent>(Expression<Func<TEvent, Func<Task>?>> action) where TEvent : IComponentEvent;
 
     /// <summary>
     /// Dispatches an event by invoking the specified action with the provided parameters.
@@ -44,7 +45,8 @@ public interface IDispatchable
     /// event type. This method invokes the action with the provided parameter, allowing dynamic event
     /// dispatching.
     /// </remarks>
-    void Dispatch<TEvent, TParam>(Expression<Func<TEvent, Action<TParam>?>> action, TParam param);
+    void Dispatch<TEvent, TParam>(Expression<Func<TEvent, Action<TParam>?>> action, TParam param)
+        where TEvent : IComponentEvent;
 
     /// <summary>
     /// Dispatches an event by invoking the specified action with the provided parameters.
@@ -61,7 +63,8 @@ public interface IDispatchable
     /// event type. This method invokes the action with the provided parameters, allowing dynamic event
     /// dispatching.
     /// </remarks>
-    void Dispatch<TEvent, TParam1, TParam2>(Expression<Func<TEvent, Action<TParam1, TParam2>?>> action, TParam1 param1, TParam2 param2);
+    void Dispatch<TEvent, TParam1, TParam2>(Expression<Func<TEvent, Action<TParam1, TParam2>?>> action, TParam1 param1, TParam2 param2)
+        where TEvent : IComponentEvent;
 
     /// <summary>
     /// Dispatches an event by invoking the specified action with the provided parameters.
@@ -79,5 +82,6 @@ public interface IDispatchable
     /// event type. This method invokes the action with the provided parameters, allowing dynamic event
     /// dispatching.
     /// </remarks>
-    void Dispatch<TEvent, TParam1, TParam2, TParam3>(Expression<Func<TEvent, Action<TParam1, TParam2, TParam3>?>> action, TParam1 param1, TParam2 param2, TParam3 param3);
+    void Dispatch<TEvent, TParam1, TParam2, TParam3>(Expression<Func<TEvent, Action<TParam1, TParam2, TParam3>?>> action, TParam1 param1, TParam2 param2, TParam3 param3)
+        where TEvent : IComponentEvent;
 }

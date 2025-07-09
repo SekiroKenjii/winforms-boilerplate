@@ -4,18 +4,18 @@ using System.Drawing.Drawing2D;
 namespace WinformsBoilerplate.App.Shared;
 
 /// <summary>
-/// Represents a base form that provides high DPI support for Windows Forms applications.
+/// Represents a base container that provides high DPI support for Windows Forms applications.
 /// </summary>
 /// <remarks>
 /// This class extends the <see cref="Form"/> class to include functionality for adjusting controls and menu items
 /// to high DPI settings. It provides methods to adjust the size and appearance of controls and images based on the
 /// current DPI settings.
 /// </remarks>
-public partial class BaseHiDpiForm : Form
+public partial class HiDpiContainerBase : Form
 {
     private float _sDpiRatio = 1.0F;
 
-    public BaseHiDpiForm()
+    public HiDpiContainerBase()
     {
         InitializeComponent();
     }
@@ -122,42 +122,62 @@ public partial class BaseHiDpiForm : Form
         List<IDisposable> list = [];
 
         Array.ForEach(collections.ToArray(), collection => {
-            foreach (object? component in collection)
-            {
-                if (component is not ToolStripMenuItem rootMenuItem)
-                {
-                    continue;
-                }
-
-                foreach (object? subComponent in rootMenuItem.DropDownItems)
-                {
-                    if (subComponent is not ToolStripMenuItem subMenuItem)
-                    {
-                        continue;
-                    }
-
-                    Image? image = subMenuItem.Image;
-
-                    if (image == null)
-                    {
-                        continue;
-                    }
-
-                    Bitmap imageStretched = GetImageStretchedDpi(image);
-                    subMenuItem.Image = imageStretched;
-                    list.Add(imageStretched);
-
-                    ToolStripItemCollection nestedControls = subMenuItem.DropDownItems;
-
-                    if (nestedControls is { Count: 0 })
-                    {
-                        continue;
-                    }
-
-                    list.AddRange(AdjustMenuStripItemsThroughDpi(nestedControls));
-                }
-            }
+            list.AddRange(ProcessToolStripItemCollection(collection));
         });
+
+        return list;
+    }
+
+    /// <summary>
+    /// Processes a ToolStripItemCollection to adjust images for high DPI.
+    /// </summary>
+    /// <param name="collection">The collection to process.</param>
+    /// <returns>A list of disposable resources created during processing.</returns>
+    private IEnumerable<IDisposable> ProcessToolStripItemCollection(ToolStripItemCollection collection)
+    {
+        List<IDisposable> list = [];
+
+        foreach (object? component in collection)
+        {
+            if (component is not ToolStripMenuItem rootMenuItem)
+            {
+                continue;
+            }
+
+            list.AddRange(ProcessMenuItemDropDowns(rootMenuItem.DropDownItems));
+        }
+
+        return list;
+    }
+
+    /// <summary>
+    /// Processes the drop-down items of a menu item to adjust images for high DPI.
+    /// </summary>
+    /// <param name="dropDownItems">The drop-down items to process.</param>
+    /// <returns>A list of disposable resources created during processing.</returns>
+    private IEnumerable<IDisposable> ProcessMenuItemDropDowns(ToolStripItemCollection dropDownItems)
+    {
+        List<IDisposable> list = [];
+
+        foreach (object? subComponent in dropDownItems)
+        {
+            if (subComponent is not ToolStripMenuItem subMenuItem)
+            {
+                continue;
+            }
+
+            if (subMenuItem.Image != null)
+            {
+                Bitmap imageStretched = GetImageStretchedDpi(subMenuItem.Image);
+                subMenuItem.Image = imageStretched;
+                list.Add(imageStretched);
+            }
+
+            if (subMenuItem.DropDownItems is { Count: > 0 })
+            {
+                list.AddRange(AdjustMenuStripItemsThroughDpi(subMenuItem.DropDownItems));
+            }
+        }
 
         return list;
     }
@@ -174,6 +194,7 @@ public partial class BaseHiDpiForm : Form
 
         return Math.Abs(_sDpiRatio - 1) <= 0;
     }
+
 
     /// <summary>
     /// Stretches the specified image to account for high DPI settings.

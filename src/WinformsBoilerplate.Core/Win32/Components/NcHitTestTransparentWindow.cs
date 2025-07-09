@@ -19,7 +19,7 @@ public class NcHitTestTransparentWindow : NativeWindow
         ctrl.HandleDestroyed += (_, _) => ReleaseHandle();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="NativeWindow.WndProc(ref Message)" />
     protected override void WndProc(ref Message m)
     {
         if (m.Msg == (int)WindowMessage.NCHitTest)

@@ -1,11 +1,16 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WinformsBoilerplate.App.Components.Controls;
 using WinformsBoilerplate.App.Components.Forms;
+using WinformsBoilerplate.Core.Abstractions;
+using WinformsBoilerplate.Core.Abstractions.Components;
+using WinformsBoilerplate.Core.Abstractions.Components.Controls;
 using WinformsBoilerplate.Core.Abstractions.Components.Forms;
 using WinformsBoilerplate.Core.Abstractions.Services;
 using WinformsBoilerplate.Core.Constants;
 using WinformsBoilerplate.Core.Entities.Settings;
 using WinformsBoilerplate.Core.Helpers;
+using WinformsBoilerplate.Core.Wrappers;
 using WinformsBoilerplate.Infrastructure.Extensions;
 
 namespace WinformsBoilerplate.App.Extensions;
@@ -30,38 +35,40 @@ public static class ServiceCollectionExtensions
     /// Binds application settings from a JSON file to the service collection.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to which application settings will be bound.</param>
-    public static void BindSettings(this IServiceCollection services)
+    public static IServiceCollection BindSettings(this IServiceCollection services)
     {
         IServiceProvider sp = services.BuildServiceProvider();
 
-        ISystemService systemService = sp.GetRequiredService<ISystemService>();
-        var checkResult = systemService.CheckAppSettingFile();
+        IAppSettingService appSettingService = sp.Resolve<IAppSettingService>();
+        ISystemService systemService = sp.Resolve<ISystemService>();
+
+        ThrowableFunction<AppSetting?, Exception> checkResult = systemService.CheckAppSettingFile();
 
         if (checkResult.Exception is not null)
         {
-            DialogResult recover = MessageBox.Show(
+            DialogResult recoverOption = MessageBox.Show(
                 "The settings file is corrupted or unreadable.\n\n" +
                 "Select 'Try Again' to restart the application.\n" +
                 "Select 'Continue' to delete the corrupted file and recreate it with default settings.\n" +
                 "Select 'Cancel' to exit the application without making any changes.",
                 $"{Application.ProductName} | Setting file corrupted!",
                 MessageBoxButtons.CancelTryContinue,
-                MessageBoxIcon.Error
+                MessageBoxIcon.Warning
             );
 
-            switch (recover)
+            switch (recoverOption)
             {
                 case DialogResult.Cancel:
                     // Exit the application without making any changes
                     systemService.ShutdownApplication();
-                    return;
+                    return services;
                 case DialogResult.TryAgain:
                     // Restart the application to try again
                     systemService.RestartApplication();
-                    return;
+                    return services;
                 case DialogResult.Continue:
                     // Delete the corrupted file and recreate it with default settings
-                    if (!systemService.CreateDefaultSettingFile(true))
+                    if (!appSettingService.CreateDefaultSettingFile(true))
                     {
                         _ = MessageBox.Show(
                             "Failed to create a new settings file. The application will now exit.",
@@ -70,7 +77,7 @@ public static class ServiceCollectionExtensions
                             MessageBoxIcon.Error
                         );
                         systemService.ShutdownApplication();
-                        return;
+                        return services;
                     }
 
                     break;
@@ -81,9 +88,8 @@ public static class ServiceCollectionExtensions
             .SetBasePath(CommonHelpers.AppStartupPath())
             .AddJsonFile(Files.SETTING_FILE, optional: false, reloadOnChange: true)
             .Build();
-        _ = services.Configure<AppSettings>(config.GetSection(nameof(AppSettings)));
-        AppSettings appSettings = config.GetSection(nameof(AppSettings)).Get<AppSettings>() ?? new AppSettings();
-        _ = services.AddSingleton(appSettings);
+
+        return services.Configure<AppSetting>(config.GetSection(nameof(AppSetting)));
     }
 
     /// <summary>
@@ -92,7 +98,48 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to which the components will be added.</param>
     public static void AddComponents(this IServiceCollection services)
     {
-        // Forms
-        _ = services.AddSingleton<IMainForm, MainForm>();
+        #region Controls
+        services.AddControls<IOverlayControl, OverlayControl>();
+        #endregion
+
+        #region Modals
+        // Adds modal components to the service collection.
+        #endregion
+
+        #region Dialogs
+        // Adds dialog components to the service collection.
+        #endregion
+
+        #region Forms
+        services.AddForms<IMainForm, MainForm>();
+        #endregion
+    }
+
+    private static void AddForms<TService, TImplementation>(this IServiceCollection services)
+        where TService : class, IForm, ISingletonDependency
+        where TImplementation : class, TService
+    {
+        _ = services.AddSingleton<TService, TImplementation>();
+    }
+
+    private static void AddDialogs<TService, TImplementation>(this IServiceCollection services)
+        where TService : class, IDialog, ISingletonDependency
+        where TImplementation : class, TService
+    {
+        _ = services.AddSingleton<TService, TImplementation>();
+    }
+
+    private static void AddModals<TService, TImplementation>(this IServiceCollection services)
+        where TService : class, IModal, ITransientDependency
+        where TImplementation : class, TService
+    {
+        _ = services.AddTransient<TService, TImplementation>();
+    }
+
+    private static void AddControls<TService, TImplementation>(this IServiceCollection services)
+        where TService : class, IControl, ITransientDependency
+        where TImplementation : class, TService
+    {
+        _ = services.AddTransient<TService, TImplementation>();
     }
 }

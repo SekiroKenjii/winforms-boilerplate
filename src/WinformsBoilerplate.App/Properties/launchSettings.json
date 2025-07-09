@@ -2,7 +2,10 @@
   "profiles": {
     "WinformsBoilerplate.App": {
       "commandName": "Project",
-      "commandLineArgs": ""
+      "commandLineArgs": "",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
     }
   }
 }

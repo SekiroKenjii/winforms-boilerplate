@@ -7,7 +7,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Components;
 /// Implement this interface in classes responsible for configuring or wiring up event handlers,
 /// ensuring a consistent approach to event initialization across different UI components.
 /// </remarks>
-public interface IComponentEvent
+public interface IComponentEvent : ISingletonDependency
 {
     /// <summary>
     /// Initializes and attaches event handlers necessary for component operation.
@@ -16,5 +16,5 @@ public interface IComponentEvent
     /// Call this method after constructing a component or loading the UI to ensure that events
     /// are properly registered. This method centralizes the logic for connecting UI actions to their handlers.
     /// </remarks>
-    void InitializeFormEvents();
+    void InitializeComponentEvents();
 }

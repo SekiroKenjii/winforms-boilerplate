@@ -12,7 +12,10 @@ namespace WinformsBoilerplate.Core.Abstractions;
 /// </remarks>
 public abstract class Disposable : IDisposable
 {
-    private bool _disposed;
+    /// <summary>
+    /// Gets a value indicating whether the object has been disposed.
+    /// </summary>
+    protected bool Disposed { get; private set; }
 
     /// <inheritdoc/>
     public void Dispose()
@@ -33,11 +36,11 @@ public abstract class Disposable : IDisposable
     /// unmanaged resources.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposing || _disposed)
+        if (!disposing || Disposed)
         {
             return;
         }
 
-        _disposed = true;
+        Disposed = true;
     }
 }

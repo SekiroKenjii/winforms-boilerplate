@@ -10,7 +10,7 @@ namespace WinformsBoilerplate.Core.Abstractions.Components;
 /// Implement this interface for controls handling multiple views or documents
 /// within a single UI component, enabling intuitive navigation through tabbed content.
 /// </remarks>
-public interface ITabControl : IControl
+public interface ITabControl : IControl, ITransientDependency
 {
     /// <summary>
     /// Gets the total number of tabs contained within the control.
@@ -20,7 +20,7 @@ public interface ITabControl : IControl
     /// <summary>
     /// Gets or sets the currently active (selected) tab page within the control.
     /// </summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
     TabPage? SelectedTab { get; set; }
 
     /// <summary>
