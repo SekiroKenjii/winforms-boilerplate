@@ -115,13 +115,6 @@ public static class ServiceCollectionExtensions
         #endregion
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="services"></param>
-    /// <typeparam name="TService"></typeparam>
-    /// <typeparam name="TImplementation"></typeparam>
-    /// <returns></returns>
     private static void AddForms<TService, TImplementation>(this IServiceCollection services)
         where TService : class, IForm, ISingletonDependency
         where TImplementation : class, TService
@@ -129,13 +122,6 @@ public static class ServiceCollectionExtensions
         _ = services.AddSingleton<TService, TImplementation>();
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="services"></param>
-    /// <typeparam name="TService"></typeparam>
-    /// <typeparam name="TImplementation"></typeparam>
-    /// <returns></returns>
     private static void AddDialogs<TService, TImplementation>(this IServiceCollection services)
         where TService : class, IDialog, ISingletonDependency
         where TImplementation : class, TService
@@ -143,13 +129,6 @@ public static class ServiceCollectionExtensions
         _ = services.AddSingleton<TService, TImplementation>();
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="services"></param>
-    /// <typeparam name="TService"></typeparam>
-    /// <typeparam name="TImplementation"></typeparam>
-    /// <returns></returns>
     private static void AddModals<TService, TImplementation>(this IServiceCollection services)
         where TService : class, IModal, ITransientDependency
         where TImplementation : class, TService
@@ -157,13 +136,6 @@ public static class ServiceCollectionExtensions
         _ = services.AddTransient<TService, TImplementation>();
     }
 
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="services"></param>
-    /// <typeparam name="TService"></typeparam>
-    /// <typeparam name="TImplementation"></typeparam>
-    /// <returns></returns>
     private static void AddControls<TService, TImplementation>(this IServiceCollection services)
         where TService : class, IControl, ITransientDependency
         where TImplementation : class, TService

@@ -69,7 +69,7 @@ public class AppSettingService : IAppSettingService
     {
         string settingFile = Path.Combine(CommonHelpers.AppStartupPath(), Files.SETTING_FILE);
 
-        if (File.Exists(settingFile))
+        if (!File.Exists(settingFile))
         {
             File.Create(settingFile).Close();
         }

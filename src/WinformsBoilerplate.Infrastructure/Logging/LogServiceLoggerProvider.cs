@@ -71,7 +71,8 @@ public class LogServiceLoggerProvider : Disposable, ILoggerProvider
     /// <returns>An ILogger instance.</returns>
     public ILogger CreateLogger(string categoryName)
     {
-        ObjectDisposedException.ThrowIf(Disposed, nameof(LogServiceLoggerProvider));
+        ObjectDisposedException.ThrowIf(Disposed, "Cannot create logger after LogServiceLoggerProvider has been disposed.");
+
         return _loggers.GetOrAdd(categoryName, name => new LogServiceLogger(name, _logService, GetLogLevelForCategory(name)));
     }
 
