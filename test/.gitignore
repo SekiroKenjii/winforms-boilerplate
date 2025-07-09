@@ -1,0 +1,14 @@
+# Test Results
+TestResults/
+coverage-reports/
+*.trx
+*.coverage
+*.coveragexml
+
+# Test Configuration
+**/appsettings.test.json
+
+# Coverage Reports
+**/coverage.cobertura.xml
+**/coverage.json
+**/coverage.info

@@ -1,0 +1,11 @@
+global using Xunit;
+global using FluentAssertions;
+global using Moq;
+global using AutoFixture;
+global using AutoFixture.Xunit2;
+global using WinformsBoilerplate.Core.Extensions;
+global using WinformsBoilerplate.Core.Abstractions;
+global using WinformsBoilerplate.Core.Constants;
+global using WinformsBoilerplate.Core.Entities;
+global using WinformsBoilerplate.Core.Enums;
+global using WinformsBoilerplate.Core.Helpers;
