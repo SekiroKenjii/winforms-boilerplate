@@ -34,27 +34,24 @@ jobs:
     - name: Cache NuGet packages
       uses: actions/cache@v4
       with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        path: ${{ runner.os == 'Windows' && '~\.nuget\packages' || '~/.nuget/packages' }}
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', '**/Directory.Packages.props') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
 
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} --verbosity normal
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} --platform "${{ matrix.platform }}" --verbosity normal
 
     - name: Run tests
-      run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --verbosity normal
-
-    - name: Publish application
+      run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --platform "${{ matrix.platform }}" --verbosity normal    - name: Publish application
       run: |
         $platform = "${{ matrix.platform }}"
         $runtimeId = if ($platform -eq "x86") { "win-x86" } else { "win-x64" }
 
         dotnet publish src/WinformsBoilerplate.App/WinformsBoilerplate.App.csproj `
-          --no-build `
           --configuration ${{ matrix.configuration }} `
           --runtime $runtimeId `
           --self-contained true `

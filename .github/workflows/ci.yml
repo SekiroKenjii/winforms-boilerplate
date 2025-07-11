@@ -33,25 +33,25 @@ jobs:
     - name: Cache NuGet packages
       uses: actions/cache@v4
       with:
-        path: ~/.nuget/packages
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        path: ${{ runner.os == 'Windows' && '~\.nuget\packages' || '~/.nuget/packages' }}
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', '**/Directory.Packages.props') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
 
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} --verbosity normal
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} --platform "${{ matrix.platform }}" --verbosity normal
 
     - name: Run tests
-      run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --verbosity normal --logger trx --results-directory TestResults/
+      run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --platform "${{ matrix.platform }}" --verbosity normal --logger trx --results-directory TestResults/
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results-${{ matrix.configuration }}-${{ matrix.platform }}
+        name: test-results-${{ matrix.configuration }}-${{ matrix.platform == 'Any CPU' && 'AnyCPU' || matrix.platform }}
         path: TestResults/
         retention-days: 30
 
@@ -72,10 +72,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Restore dependencies
-      run: dotnet restore ${{ env.SOLUTION_FILE }}
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
 
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release --verbosity normal
 
     - name: Run tests with coverage
       run: |
