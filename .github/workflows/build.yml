@@ -43,10 +43,10 @@ jobs:
       run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
 
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} --platform "${{ matrix.platform }}" --verbosity normal
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal
 
     - name: Run tests
-      run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --platform "${{ matrix.platform }}" --verbosity normal    - name: Publish application
+      run: dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal --no-restore    - name: Publish application
       run: |
         $platform = "${{ matrix.platform }}"
         $runtimeId = if ($platform -eq "x86") { "win-x86" } else { "win-x64" }

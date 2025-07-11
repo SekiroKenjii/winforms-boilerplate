@@ -53,7 +53,7 @@ try {
     Write-Host ""
 
     Write-Host "Step 3: Run tests" -ForegroundColor Cyan
-    dotnet test $SolutionFile --no-build --configuration $Configuration /p:Platform=$Platform --verbosity normal --logger console
+    dotnet test $SolutionFile --configuration $Configuration /p:Platform=$Platform --verbosity normal --logger console --no-restore
     if ($LASTEXITCODE -ne 0) { throw "Tests failed" }
     Write-Host "✓ Tests completed successfully" -ForegroundColor Green
     Write-Host ""
@@ -72,6 +72,11 @@ try {
     Write-Host "3. Ensure all NuGet packages are properly configured"
     Write-Host "4. Verify test projects have proper test framework references"
     Write-Host "5. Check for compilation errors in individual projects"
+    Write-Host "6. Try running with --no-build removed: dotnet test without --no-build"
+    Write-Host "7. Check assembly binding issues with fusion logs"
+    Write-Host ""
+    Write-Host "For assembly loading issues, try:" -ForegroundColor Cyan
+    Write-Host "  dotnet test --configuration $Configuration /p:Platform=`"$Platform`" --verbosity diagnostic"
     Write-Host ""
     exit 1
 }

@@ -44,11 +44,12 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
+        dotnet test ${{ env.SOLUTION_FILE }} --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-reports/ `
           --settings coverlet.runsettings `
-          --verbosity normal
+          --verbosity normal `
+          --no-restore
 
     - name: Generate coverage report
       run: |
@@ -111,11 +112,12 @@ jobs:
 
     - name: Run coverage check
       run: |
-        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
+        dotnet test ${{ env.SOLUTION_FILE }} --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-check/ `
           --settings coverlet.runsettings `
-          --verbosity normal
+          --verbosity normal `
+          --no-restore
 
         # Extract coverage percentage from XML report
         $coverageFiles = Get-ChildItem -Path "./coverage-check/" -Recurse -Filter "coverage.cobertura.xml"
