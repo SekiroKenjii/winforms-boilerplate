@@ -18,7 +18,7 @@ on:
         type: choice
         options:
         - Any CPU
-        - x86
+        # - x86  # Disabled due to .NET 9 preview apphost.exe issue
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -27,74 +27,74 @@ env:
 jobs:
   debug-assemblies:
     runs-on: windows-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    
+
     - name: Restore dependencies
       run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity diagnostic
-    
+
     - name: Build solution with detailed output
       run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ inputs.configuration }} /p:Platform="${{ inputs.platform }}" --verbosity diagnostic
-    
+
     - name: List output directories
       run: |
         Write-Host "=== Scanning for output directories ===" -ForegroundColor Green
-        
+
         Get-ChildItem -Path "." -Recurse -Directory -Name "bin" | ForEach-Object {
           $binPath = $_
           Write-Host "Found bin directory: $binPath" -ForegroundColor Yellow
-          
+
           Get-ChildItem -Path $binPath -Recurse -File "*.dll" | ForEach-Object {
             Write-Host "  Assembly: $($_.FullName)" -ForegroundColor Cyan
           }
         }
-    
+
     - name: Check test project dependencies
       run: |
         Write-Host "=== Checking test project dependencies ===" -ForegroundColor Green
-        
+
         $testProjects = Get-ChildItem -Path "test" -Recurse -Filter "*.csproj"
-        
+
         foreach ($project in $testProjects) {
           Write-Host "Analyzing project: $($project.Name)" -ForegroundColor Yellow
-          
+
           # Check project dependencies
           dotnet list $project.FullName package --include-transitive | Write-Host
-          
+
           Write-Host ""
           Write-Host "Project references:" -ForegroundColor Cyan
           dotnet list $project.FullName reference | Write-Host
           Write-Host ""
         }
-    
+
     - name: Test with detailed logging
       run: |
         Write-Host "=== Running tests with detailed logging ===" -ForegroundColor Green
-        
+
         $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
         $env:COREHOST_TRACE = "1"
         $env:COREHOST_TRACEFILE = "host-trace.txt"
-        
+
         try {
           dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ inputs.configuration }} /p:Platform="${{ inputs.platform }}" --verbosity diagnostic --logger console --no-restore
         } catch {
           Write-Host "Test execution failed, checking trace file..." -ForegroundColor Red
-          
+
           if (Test-Path "host-trace.txt") {
             Write-Host "=== Host trace file contents ===" -ForegroundColor Yellow
             Get-Content "host-trace.txt" | Write-Host
           }
-          
+
           throw
         }
-    
+
     - name: Upload diagnostic files
       uses: actions/upload-artifact@v4
       if: always()
@@ -108,42 +108,42 @@ jobs:
   fusion-logging:
     runs-on: windows-latest
     if: failure()
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
-    
+
     - name: Enable fusion logging
       run: |
         Write-Host "=== Enabling assembly binding logging ===" -ForegroundColor Green
-        
+
         # Create registry entries for fusion logging (requires admin, might not work in GitHub Actions)
         # This is mainly for documentation purposes
         Write-Host "Assembly binding logging settings (requires admin access):"
         Write-Host "Registry path: HKLM\SOFTWARE\Microsoft\Fusion"
         Write-Host "EnableLog (DWORD): 1"
-        Write-Host "ForceLog (DWORD): 1" 
+        Write-Host "ForceLog (DWORD): 1"
         Write-Host "LogPath (String): C:\FusionLogs"
         Write-Host ""
         Write-Host "Alternative: Use DOTNET_* environment variables for debugging"
-    
+
     - name: Test with environment debugging
       run: |
         $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
         $env:DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "false"
         $env:DOTNET_EnableEventPipe = "1"
         $env:DOTNET_EventPipeOutputPath = "./diagnostic-trace.nettrace"
-        
+
         Write-Host "=== Running with enhanced debugging ===" -ForegroundColor Green
-        
+
         dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
         dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ inputs.configuration }} /p:Platform="${{ inputs.platform }}" --verbosity normal
-        
+
         # Try to run tests and capture any assembly loading failures
         try {
           dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ inputs.configuration }} /p:Platform="${{ inputs.platform }}" --verbosity normal --no-restore

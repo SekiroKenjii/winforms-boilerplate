@@ -29,6 +29,13 @@ param(
 $ErrorActionPreference = "Stop"
 $SolutionFile = "WinformsBoilerplate.sln"
 
+# Known issue warning for x86 platform
+if ($Platform -eq "x86") {
+    Write-Host "⚠️  WARNING: x86 platform may fail with .NET 9 preview due to apphost.exe issues" -ForegroundColor Yellow
+    Write-Host "   Consider using 'Any CPU' platform for now." -ForegroundColor Yellow
+    Write-Host ""
+}
+
 Write-Host "=== Local Build Test ===" -ForegroundColor Green
 Write-Host "Configuration: $Configuration" -ForegroundColor Yellow
 Write-Host "Platform: $Platform" -ForegroundColor Yellow

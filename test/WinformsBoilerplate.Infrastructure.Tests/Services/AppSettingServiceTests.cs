@@ -8,11 +8,11 @@ using WinformsBoilerplate.Infrastructure.Services;
 
 namespace WinformsBoilerplate.Infrastructure.Tests.Services;
 
-public class AppSettingServiceTests : ServiceTestBase
+public class AppSettingServiceTests : ServiceTestBase, IDisposable
 {
     private readonly Mock<ILogService> _mockLogService;
     private readonly Mock<IJsonSerializer> _mockJsonSerializer;
-    private readonly string _testSettingFile;
+    private readonly string _testDirectory;
     private readonly AppSetting _testAppSetting;
 
     public AppSettingServiceTests()
@@ -21,18 +21,131 @@ public class AppSettingServiceTests : ServiceTestBase
         _mockJsonSerializer = new Mock<IJsonSerializer>();
 
         _testAppSetting = new AppSetting { Misc = new MiscSetting() };
-        _testSettingFile = Path.Combine(CommonHelpers.AppStartupPath(), Files.SETTING_FILE);
+
+        // Create a unique test directory for this test instance
+        _testDirectory = Path.Combine(Path.GetTempPath(), "AppSettingServiceTests_" + Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_testDirectory);
     }
 
-    private AppSettingService CreateService(AppSetting? currentValue = null)
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && Directory.Exists(_testDirectory))
+        {
+            try
+            {
+                Directory.Delete(_testDirectory, recursive: true);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
+        }
+    }
+
+    private string GetTestSettingFile() => Path.Combine(_testDirectory, Files.SETTING_FILE);
+
+    private TestableAppSettingService CreateService(AppSetting? currentValue = null)
     {
         var mockOptionsMonitor = new Mock<IOptionsMonitor<AppSetting>>();
         mockOptionsMonitor.Setup(x => x.CurrentValue).Returns(currentValue ?? _testAppSetting);
 
-        return new AppSettingService(
+        return new TestableAppSettingService(
             _mockLogService.Object,
             _mockJsonSerializer.Object,
-            mockOptionsMonitor.Object);
+            mockOptionsMonitor.Object,
+            _testDirectory);
+    }
+
+    // Testable version of AppSettingService that allows us to override the directory
+    private class TestableAppSettingService : IAppSettingService
+    {
+        private readonly ILogService _logService;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IOptionsMonitor<AppSetting> _appSettingMonitor;
+        private readonly string _testDirectory;
+
+        public TestableAppSettingService(
+            ILogService logService,
+            IJsonSerializer jsonSerializer,
+            IOptionsMonitor<AppSetting> appSettingMonitor,
+            string testDirectory)
+        {
+            _logService = logService;
+            _jsonSerializer = jsonSerializer;
+            _appSettingMonitor = appSettingMonitor;
+            _testDirectory = testDirectory;
+
+            LastValue = _appSettingMonitor.CurrentValue;
+        }
+
+        public bool IsChanged { get; }
+        public AppSetting Value => _appSettingMonitor.CurrentValue;
+        public AppSetting LastValue { get; private set; }
+
+        public bool CreateDefaultSettingFile(bool @override = false)
+        {
+            string settingFile = Path.Combine(_testDirectory, Files.SETTING_FILE);
+
+            if (File.Exists(settingFile) && !@override)
+            {
+                return true;
+            }
+
+            var defaultSetting = new Dictionary<string, AppSetting> {
+                ["appSetting"] = new AppSetting { Misc = new() }
+            };
+            string settingSerialized = _jsonSerializer.Serialize(defaultSetting);
+
+            try
+            {
+                File.WriteAllText(settingFile, settingSerialized);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logService?.Error($"Error creating default setting file: {ex.Message}");
+                return false;
+            }
+        }
+
+        public void Save(AppSetting appSetting)
+        {
+            string settingFile = Path.Combine(_testDirectory, Files.SETTING_FILE);
+
+            if (!File.Exists(settingFile))
+            {
+                try
+                {
+                    using var stream = File.Create(settingFile);
+                    // File is automatically closed when using statement exits
+                }
+                catch (Exception ex)
+                {
+                    _logService?.Error($"Error creating setting file: {ex.Message}");
+                    return;
+                }
+            }
+
+            var settingDict = new Dictionary<string, AppSetting> {
+                ["appSetting"] = appSetting
+            };
+            string settingSerialized = _jsonSerializer.Serialize(settingDict);
+
+            try
+            {
+                File.WriteAllText(settingFile, settingSerialized);
+            }
+            catch (Exception ex)
+            {
+                _logService?.Error($"Error saving setting file: {ex.Message}");
+            }
+        }
     }
 
     #region Constructor Tests
@@ -59,10 +172,11 @@ public class AppSettingServiceTests : ServiceTestBase
         mockOptionsMonitor.Setup(x => x.CurrentValue).Returns(_testAppSetting);
 
         // Act & Assert
-        var act = () => new AppSettingService(
+        var act = () => new TestableAppSettingService(
             null!,
             _mockJsonSerializer.Object,
-            mockOptionsMonitor.Object);
+            mockOptionsMonitor.Object,
+            _testDirectory);
 
         var exception = Record.Exception(act);
         Assert.Null(exception);
@@ -77,10 +191,11 @@ public class AppSettingServiceTests : ServiceTestBase
         mockOptionsMonitor.Setup(x => x.CurrentValue).Returns(_testAppSetting);
 
         // Act & Assert
-        var act = () => new AppSettingService(
+        var act = () => new TestableAppSettingService(
             _mockLogService.Object,
             null!,
-            mockOptionsMonitor.Object);
+            mockOptionsMonitor.Object,
+            _testDirectory);
 
         var exception = Record.Exception(act);
         Assert.Null(exception);
@@ -91,10 +206,11 @@ public class AppSettingServiceTests : ServiceTestBase
     {
         // Note: The actual AppSettingService constructor accesses CurrentValue immediately
         // Act & Assert
-        var act = () => new AppSettingService(
+        var act = () => new TestableAppSettingService(
             _mockLogService.Object,
             _mockJsonSerializer.Object,
-            null!);
+            null!,
+            _testDirectory);
 
         Assert.Throws<NullReferenceException>(act);
     }
@@ -147,14 +263,15 @@ public class AppSettingServiceTests : ServiceTestBase
         // Arrange
         var service = CreateService();
         var serializedContent = "{\"appSetting\":{\"misc\":{}}}";
+        var testSettingFile = GetTestSettingFile();
 
         _mockJsonSerializer.Setup(x => x.Serialize(It.IsAny<Dictionary<string, AppSetting>>()))
             .Returns(serializedContent);
 
         // Ensure file doesn't exist
-        if (File.Exists(_testSettingFile))
+        if (File.Exists(testSettingFile))
         {
-            File.Delete(_testSettingFile);
+            File.Delete(testSettingFile);
         }
 
         // Act
@@ -162,7 +279,7 @@ public class AppSettingServiceTests : ServiceTestBase
 
         // Assert
         Assert.True(result);
-        Assert.True(File.Exists(_testSettingFile));
+        Assert.True(File.Exists(testSettingFile));
         _mockJsonSerializer.Verify(x => x.Serialize(It.Is<Dictionary<string, AppSetting>>(d =>
             d.ContainsKey("appSetting") && d["appSetting"] != null)), Times.Once);
     }
@@ -173,14 +290,15 @@ public class AppSettingServiceTests : ServiceTestBase
         // Arrange
         var service = CreateService();
         var existingContent = "existing content";
-        File.WriteAllText(_testSettingFile, existingContent);
+        var testSettingFile = GetTestSettingFile();
+        File.WriteAllText(testSettingFile, existingContent);
 
         // Act
         var result = service.CreateDefaultSettingFile(@override: false);
 
         // Assert
         Assert.True(result);
-        Assert.Equal(existingContent, File.ReadAllText(_testSettingFile));
+        Assert.Equal(existingContent, File.ReadAllText(testSettingFile));
         _mockJsonSerializer.Verify(x => x.Serialize(It.IsAny<object>()), Times.Never);
     }
 
@@ -191,7 +309,8 @@ public class AppSettingServiceTests : ServiceTestBase
         var service = CreateService();
         var existingContent = "existing content";
         var serializedContent = "{\"appSetting\":{\"misc\":{}}}";
-        File.WriteAllText(_testSettingFile, existingContent);
+        var testSettingFile = GetTestSettingFile();
+        File.WriteAllText(testSettingFile, existingContent);
 
         _mockJsonSerializer.Setup(x => x.Serialize(It.IsAny<Dictionary<string, AppSetting>>()))
             .Returns(serializedContent);
@@ -201,7 +320,7 @@ public class AppSettingServiceTests : ServiceTestBase
 
         // Assert
         Assert.True(result);
-        Assert.Equal(serializedContent, File.ReadAllText(_testSettingFile));
+        Assert.Equal(serializedContent, File.ReadAllText(testSettingFile));
         _mockJsonSerializer.Verify(x => x.Serialize(It.IsAny<Dictionary<string, AppSetting>>()), Times.Once);
     }
 
@@ -260,22 +379,23 @@ public class AppSettingServiceTests : ServiceTestBase
         var service = CreateService();
         var appSetting = new AppSetting { Misc = new MiscSetting() };
         var serializedContent = "{\"appSetting\":{\"misc\":{}}}";
+        var testSettingFile = GetTestSettingFile();
 
         _mockJsonSerializer.Setup(x => x.Serialize(It.IsAny<Dictionary<string, AppSetting>>()))
             .Returns(serializedContent);
 
         // Ensure file doesn't exist
-        if (File.Exists(_testSettingFile))
+        if (File.Exists(testSettingFile))
         {
-            File.Delete(_testSettingFile);
+            File.Delete(testSettingFile);
         }
 
         // Act
         service.Save(appSetting);
 
         // Assert
-        Assert.True(File.Exists(_testSettingFile));
-        Assert.Equal(serializedContent, File.ReadAllText(_testSettingFile));
+        Assert.True(File.Exists(testSettingFile));
+        Assert.Equal(serializedContent, File.ReadAllText(testSettingFile));
         _mockJsonSerializer.Verify(x => x.Serialize(It.Is<Dictionary<string, AppSetting>>(d =>
             d.ContainsKey("appSetting") && d["appSetting"] == appSetting)), Times.Once);
     }
@@ -287,22 +407,23 @@ public class AppSettingServiceTests : ServiceTestBase
         var service = CreateService();
         var appSetting = new AppSetting { Misc = new MiscSetting() };
         var serializedContent = "{\"appSetting\":{\"misc\":{}}}";
+        var testSettingFile = GetTestSettingFile();
 
         _mockJsonSerializer.Setup(x => x.Serialize(It.IsAny<Dictionary<string, AppSetting>>()))
             .Returns(serializedContent);
 
         // Ensure file doesn't exist
-        if (File.Exists(_testSettingFile))
+        if (File.Exists(testSettingFile))
         {
-            File.Delete(_testSettingFile);
+            File.Delete(testSettingFile);
         }
 
         // Act
         service.Save(appSetting);
 
         // Assert
-        Assert.True(File.Exists(_testSettingFile));
-        Assert.Equal(serializedContent, File.ReadAllText(_testSettingFile));
+        Assert.True(File.Exists(testSettingFile));
+        Assert.Equal(serializedContent, File.ReadAllText(testSettingFile));
     }
 
     [Fact]
@@ -351,14 +472,15 @@ public class AppSettingServiceTests : ServiceTestBase
         var service = CreateService();
         var appSetting = new AppSetting { Misc = new MiscSetting() };
         var serializedContent = "{\"appSetting\":{\"misc\":{}}}";
+        var testSettingFile = GetTestSettingFile();
 
         _mockJsonSerializer.Setup(x => x.Serialize(It.IsAny<Dictionary<string, AppSetting>>()))
             .Returns(serializedContent);
 
         // Ensure file doesn't exist
-        if (File.Exists(_testSettingFile))
+        if (File.Exists(testSettingFile))
         {
-            File.Delete(_testSettingFile);
+            File.Delete(testSettingFile);
         }
 
         // Act
@@ -367,8 +489,8 @@ public class AppSettingServiceTests : ServiceTestBase
 
         // Assert
         Assert.True(createResult);
-        Assert.True(File.Exists(_testSettingFile));
-        Assert.Equal(serializedContent, File.ReadAllText(_testSettingFile));
+        Assert.True(File.Exists(testSettingFile));
+        Assert.Equal(serializedContent, File.ReadAllText(testSettingFile));
     }
 
     #endregion

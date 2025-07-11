@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         configuration: [Release]
-        platform: [Any CPU, x86]
+        platform: [Any CPU]  # Note: x86 disabled due to .NET 9 preview apphost.exe issue
 
     steps:
     - name: Checkout code
