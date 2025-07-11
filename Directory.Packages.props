@@ -28,5 +28,6 @@
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.6" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Primitives" Version="9.0.6" />
   </ItemGroup>
 </Project>
