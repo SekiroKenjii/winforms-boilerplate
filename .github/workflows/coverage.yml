@@ -39,6 +39,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
 
+    - name: Clean solution
+      run: dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+
     - name: Build solution
       run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release --verbosity normal
 
@@ -47,7 +50,7 @@ jobs:
         dotnet test ${{ env.SOLUTION_FILE }} --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-reports/ `
-          --settings coverlet.runsettings `
+          --settings test.runsettings `
           --verbosity normal
 
     - name: Generate coverage report
@@ -106,6 +109,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
 
+    - name: Clean solution
+      run: dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+
     - name: Build solution
       run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release --verbosity normal
 
@@ -114,7 +120,7 @@ jobs:
         dotnet test ${{ env.SOLUTION_FILE }} --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-check/ `
-          --settings coverlet.runsettings `
+          --settings test.runsettings `
           --verbosity normal
 
         # Extract coverage percentage from XML report

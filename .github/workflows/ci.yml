@@ -89,7 +89,7 @@ jobs:
         dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-reports/ `
-          --settings coverlet.runsettings `
+          --settings test.runsettings `
           --verbosity normal
 
     - name: Upload coverage reports to Codecov

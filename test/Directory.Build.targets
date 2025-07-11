@@ -4,14 +4,14 @@
     <!-- Force all dependencies to be copied locally for test projects -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <CopyLocalRuntimeTargetAssets>true</CopyLocalRuntimeTargetAssets>
-    
+
     <!-- Enable automatic binding redirect generation -->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
-    
+
     <!-- Ensure runtime config files are generated -->
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    
+
     <!-- Copy all runtime assets -->
     <PublishReadyToRun>false</PublishReadyToRun>
     <_ResolveLocalMachineAssemblies>true</_ResolveLocalMachineAssemblies>
@@ -26,7 +26,7 @@
       </ReferenceCopyLocalPaths>
     </ItemGroup>
   </Target>
-  
+
   <!-- Additional probing paths for assembly resolution -->
   <Target Name="AddAssemblyProbingPaths" AfterTargets="ResolveAssemblyReferences" Condition="'$(IsTestProject)' == 'true'">
     <ItemGroup>
@@ -40,8 +40,8 @@
     <ItemGroup>
       <TestHostRuntimeConfig Include="$(OutputPath)testhost.runtimeconfig.json" />
     </ItemGroup>
-    <WriteLinesToFile 
-      File="$(OutputPath)testhost.runtimeconfig.json" 
+    <WriteLinesToFile
+      File="$(OutputPath)testhost.runtimeconfig.json"
       Lines='{
   "runtimeOptions": {
     "tfm": "net9.0",
