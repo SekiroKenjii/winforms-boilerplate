@@ -1,0 +1,123 @@
+name: Dependency Update
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  dependency-check:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Check for outdated packages
+      run: |
+        Write-Host "Checking for outdated NuGet packages..."
+
+        # Get all project files
+        $projectFiles = Get-ChildItem -Path "." -Recurse -Filter "*.csproj"
+
+        $hasOutdated = $false
+        $outdatedPackages = @()
+
+        foreach ($project in $projectFiles) {
+          Write-Host "Checking project: $($project.Name)"
+
+          try {
+            $output = dotnet list $project.FullName package --outdated --format json 2>$null
+            if ($output) {
+              $json = $output | ConvertFrom-Json
+
+              if ($json.projects) {
+                foreach ($proj in $json.projects) {
+                  if ($proj.frameworks) {
+                    foreach ($framework in $proj.frameworks) {
+                      if ($framework.topLevelPackages) {
+                        foreach ($package in $framework.topLevelPackages) {
+                          $hasOutdated = $true
+                          $outdatedPackages += [PSCustomObject]@{
+                            Project = $project.Name
+                            Package = $package.id
+                            Current = $package.resolvedVersion
+                            Latest = $package.latestVersion
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          catch {
+            Write-Host "::warning::Failed to check packages for $($project.Name): $($_.Exception.Message)"
+          }
+        }
+
+        if ($hasOutdated) {
+          Write-Host "::notice::Found outdated packages:"
+          $outdatedPackages | Format-Table -AutoSize
+
+          # Create summary
+          $summary = "## Outdated NuGet Packages`n`n"
+          $summary += "| Project | Package | Current Version | Latest Version |`n"
+          $summary += "|---------|---------|-----------------|----------------|`n"
+
+          foreach ($pkg in $outdatedPackages) {
+            $summary += "| $($pkg.Project) | $($pkg.Package) | $($pkg.Current) | $($pkg.Latest) |`n"
+          }
+
+          # Save summary to file for potential PR creation
+          $summary | Out-File -FilePath "dependency-update-summary.md" -Encoding UTF8
+        } else {
+          Write-Host "::notice::All packages are up to date!"
+        }
+
+    - name: Check for security vulnerabilities
+      run: |
+        Write-Host "Checking for security vulnerabilities..."
+
+        try {
+          $auditOutput = dotnet list package --vulnerable --include-transitive 2>&1
+
+          if ($auditOutput -match "has the following vulnerable packages") {
+            Write-Host "::warning::Security vulnerabilities found:"
+            Write-Host $auditOutput
+
+            # Create security summary
+            $securitySummary = "## Security Vulnerabilities Found`n`n"
+            $securitySummary += "The following vulnerable packages were detected:`n`n"
+            $securitySummary += "``````text`n"
+            $securitySummary += $auditOutput
+            $securitySummary += "`n``````"
+
+            $securitySummary | Out-File -FilePath "security-vulnerabilities.md" -Encoding UTF8
+          } else {
+            Write-Host "::notice::No security vulnerabilities found!"
+          }
+        }
+        catch {
+          Write-Host "::warning::Failed to check for vulnerabilities: $($_.Exception.Message)"
+        }
+
+    - name: Upload dependency reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-reports
+        path: |
+          dependency-update-summary.md
+          security-vulnerabilities.md
+        retention-days: 30

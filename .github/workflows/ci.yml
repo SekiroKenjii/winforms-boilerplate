@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "develop", "features/*" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  SOLUTION_FILE: 'WinformsBoilerplate.sln'
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        platform: [Any CPU, x86]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} --verbosity normal
+
+    - name: Run tests
+      run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --verbosity normal --logger trx --results-directory TestResults/
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.configuration }}-${{ matrix.platform }}
+        path: TestResults/
+        retention-days: 30
+
+  code-quality:
+    runs-on: windows-latest
+    needs: build-and-test
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }}
+
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release
+
+    - name: Run tests with coverage
+      run: |
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
+          --collect:"XPlat Code Coverage" `
+          --results-directory ./coverage-reports/ `
+          --settings coverlet.runsettings `
+          --verbosity normal
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        directory: ./coverage-reports/
+        files: '**/coverage.cobertura.xml'
+        fail_ci_if_error: false
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
