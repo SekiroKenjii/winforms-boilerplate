@@ -60,7 +60,10 @@ try {
     Write-Host ""
 
     Write-Host "Step 3: Run tests" -ForegroundColor Cyan
-    dotnet test $SolutionFile --configuration $Configuration /p:Platform=$Platform --verbosity normal --logger console --no-restore
+    # Force clean build to ensure all dependencies are properly resolved
+    dotnet clean $SolutionFile --configuration $Configuration
+    dotnet build $SolutionFile --configuration $Configuration /p:Platform=$Platform --verbosity normal
+    dotnet test $SolutionFile --no-build --configuration $Configuration --verbosity normal --logger console
     if ($LASTEXITCODE -ne 0) { throw "Tests failed" }
     Write-Host "✓ Tests completed successfully" -ForegroundColor Green
     Write-Host ""

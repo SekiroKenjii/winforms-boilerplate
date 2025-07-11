@@ -48,8 +48,7 @@ jobs:
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-reports/ `
           --settings coverlet.runsettings `
-          --verbosity normal `
-          --no-restore
+          --verbosity normal
 
     - name: Generate coverage report
       run: |
@@ -116,8 +115,7 @@ jobs:
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-check/ `
           --settings coverlet.runsettings `
-          --verbosity normal `
-          --no-restore
+          --verbosity normal
 
         # Extract coverage percentage from XML report
         $coverageFiles = Get-ChildItem -Path "./coverage-check/" -Recurse -Filter "coverage.cobertura.xml"

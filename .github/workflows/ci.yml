@@ -45,7 +45,11 @@ jobs:
       run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal
 
     - name: Run tests
-      run: dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal --logger trx --results-directory TestResults/ --no-restore
+      run: |
+        # Force rebuild of test projects to ensure all dependencies are copied
+        dotnet clean ${{ env.SOLUTION_FILE }} --configuration ${{ matrix.configuration }}
+        dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --verbosity normal --logger trx --results-directory TestResults/ --collect:"XPlat Code Coverage"
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -79,12 +83,14 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        dotnet test ${{ env.SOLUTION_FILE }} --configuration Release `
+        # Ensure clean build for code quality analysis
+        dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release
+        dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-reports/ `
           --settings coverlet.runsettings `
-          --verbosity normal `
-          --no-restore
+          --verbosity normal
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
