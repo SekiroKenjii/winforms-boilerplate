@@ -147,13 +147,13 @@ public class EventStore(IServiceProvider sp) : Dispatchable, IEventStore
     /// <inheritdoc cref="IDisposable.Dispose(bool)" />
     protected override void Dispose(bool disposing)
     {
-        base.Dispose(disposing);
-
-        if (Disposed)
+        if (!disposing || Disposed)
         {
             return;
         }
 
         Flush();
+
+        base.Dispose(disposing);
     }
 }

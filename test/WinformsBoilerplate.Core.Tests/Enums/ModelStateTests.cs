@@ -7,10 +7,10 @@ public class ModelStateTests
     {
         // Verify that the ModelState enum has the expected values
         var enumValues = Enum.GetValues<ModelState>();
-        enumValues.Should().NotBeEmpty();
-        enumValues.Should().Contain(ModelState.Init);
-        enumValues.Should().Contain(ModelState.None);
-        enumValues.Should().Contain(ModelState.Modified);
+        Assert.NotEmpty(enumValues);
+        Assert.Contains(ModelState.Init, enumValues);
+        Assert.Contains(ModelState.None, enumValues);
+        Assert.Contains(ModelState.Modified, enumValues);
     }
 
     [Theory]
@@ -20,6 +20,6 @@ public class ModelStateTests
     public void ModelState_ShouldBeValidEnumValue(ModelState state)
     {
         // Verify that the enum values are defined
-        Enum.IsDefined(typeof(ModelState), state).Should().BeTrue();
+        Assert.True(Enum.IsDefined(typeof(ModelState), state));
     }
 }

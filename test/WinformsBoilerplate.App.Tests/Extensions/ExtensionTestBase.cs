@@ -30,6 +30,6 @@ public class SampleExtensionTests : ExtensionTestBase
         var services = new ServiceCollection();
 
         // Act & Assert
-        services.Should().NotBeNull();
+        Assert.NotNull(services);
     }
 }

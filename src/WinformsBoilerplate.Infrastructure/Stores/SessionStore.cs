@@ -53,9 +53,7 @@ public class SessionStore : Disposable, ISessionStore
     /// <inheritdoc cref="Disposable.Dispose(bool)" />
     protected override void Dispose(bool disposing)
     {
-        base.Dispose(disposing);
-
-        if (Disposed)
+        if (!disposing || Disposed)
         {
             return;
         }
@@ -66,5 +64,7 @@ public class SessionStore : Disposable, ISessionStore
         }
 
         _store.Clear();
+
+        base.Dispose(disposing);
     }
 }

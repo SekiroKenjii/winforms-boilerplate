@@ -1,4 +1,4 @@
-using KellermanSoftware.CompareNetObjects;
+using WinformsBoilerplate.Core.Helpers;
 
 namespace WinformsBoilerplate.Core.Entities.Settings;
 
@@ -14,28 +14,12 @@ public sealed class AppSetting : IEquatable<AppSetting>
 
     public bool Equals(AppSetting? other)
     {
-        if (other is null)
-        {
-            return false;
-        }
-
-        var compareLogic = new CompareLogic();
-        ComparisonResult result = compareLogic.Compare(this, other);
-
-        return result.AreEqual;
+        return other is not null && ObjectHelpers.Compare(this, other);
     }
 
     public override bool Equals(object? obj)
     {
-        if (obj is not AppSetting other)
-        {
-            return false;
-        }
-
-        var compareLogic = new CompareLogic();
-        ComparisonResult result = compareLogic.Compare(this, other);
-
-        return result.AreEqual;
+        return obj is AppSetting other && ObjectHelpers.Compare(this, other);
     }
 
     public override int GetHashCode()

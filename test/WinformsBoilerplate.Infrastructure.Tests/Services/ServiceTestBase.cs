@@ -38,7 +38,7 @@ public class SampleServiceTests : ServiceTestBase
         var services = CreateServiceCollection();
 
         // Act & Assert
-        services.Should().NotBeNull();
-        services.Should().NotBeEmpty();
+        Assert.NotNull(services);
+        Assert.NotEmpty(services);
     }
 }

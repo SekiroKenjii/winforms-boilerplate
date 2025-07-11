@@ -12,7 +12,8 @@ public class DisposableTests
         disposable.Dispose();
 
         // Assert
-        disposable.IsDisposed.Should().BeTrue();
+        Assert.True(disposable.IsDisposed);
+
     }
 
     [Fact]
@@ -23,8 +24,8 @@ public class DisposableTests
 
         // Act & Assert
         disposable.Dispose();
-        var act = () => disposable.Dispose();
-        act.Should().NotThrow();
+        var exception = Record.Exception(() => disposable.Dispose());
+        Assert.Null(exception);
     }
 
     [Fact]
@@ -39,7 +40,7 @@ public class DisposableTests
         disposable.Dispose();
 
         // Assert
-        disposable.DisposeCallCount.Should().Be(1);
+        Assert.Equal(1, disposable.DisposeCallCount);
     }
 
     [Fact]
@@ -49,7 +50,7 @@ public class DisposableTests
         var disposable = new TestDisposable();
 
         // Assert
-        disposable.IsDisposed.Should().BeFalse();
+        Assert.False(disposable.IsDisposed);
     }
 
     private class TestDisposable : Disposable
