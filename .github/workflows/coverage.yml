@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main", "develop" ]
 
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
 env:
   DOTNET_VERSION: '9.0.x'
   SOLUTION_FILE: 'WinformsBoilerplate.sln'
