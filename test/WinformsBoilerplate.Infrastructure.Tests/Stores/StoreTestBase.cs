@@ -3,7 +3,7 @@ namespace WinformsBoilerplate.Infrastructure.Tests.Stores;
 /// <summary>
 /// Base class for store tests that provides common testing utilities.
 /// </summary>
-public abstract class StoreTestBase
+public abstract class StoreTestBase : IDisposable
 {
     protected readonly Fixture Fixture;
     protected readonly Mock<ILogger> MockLogger;
@@ -12,6 +12,11 @@ public abstract class StoreTestBase
     {
         Fixture = new Fixture();
         MockLogger = new Mock<ILogger>();
+    }
+
+    public virtual void Dispose()
+    {
+        GC.SuppressFinalize(this);
     }
 }
 
@@ -28,6 +33,6 @@ public class SampleStoreTests : StoreTestBase
         var testData = Fixture.Create<string>();
 
         // Act & Assert
-        testData.Should().NotBeNull();
+        Assert.NotNull(testData);
     }
 }

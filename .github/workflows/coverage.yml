@@ -1,0 +1,145 @@
+name: Code Coverage
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  SOLUTION_FILE: 'WinformsBoilerplate.sln'
+
+jobs:
+  coverage:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.os == 'Windows' && '~\.nuget\packages' || '~/.nuget/packages' }}
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', '**/Directory.Packages.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Install ReportGenerator tool
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
+
+    - name: Build solution and run tests with coverage
+      run: |
+        # Ensure clean build for assembly resolution fixes
+        dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+        dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
+          --collect:"XPlat Code Coverage" `
+          --results-directory ./coverage-reports/ `
+          --settings test.runsettings `
+          --verbosity normal
+
+    - name: Generate coverage report
+      run: |
+        reportgenerator `
+          -reports:"./coverage-reports/**/coverage.cobertura.xml" `
+          -targetdir:"./coverage-reports/html" `
+          -reporttypes:"Html;HtmlSummary;Badges" `
+          -verbosity:Info
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        directory: ./coverage-reports/
+        files: '**/coverage.cobertura.xml'
+        fail_ci_if_error: false
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Upload coverage HTML report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: ./coverage-reports/html/
+        retention-days: 30
+
+    - name: Comment coverage report on PR
+      if: github.event_name == 'pull_request'
+      uses: marocchino/sticky-pull-request-comment@v2
+      with:
+        recreate: true
+        message: |
+          ## Code Coverage Report
+
+          Coverage reports have been generated and uploaded as artifacts.
+
+          📊 [View detailed coverage report in artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+          The coverage data has also been sent to Codecov for tracking trends.
+
+  coverage-check:
+    runs-on: windows-latest
+    needs: coverage
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
+
+    - name: Run coverage check
+      run: |
+        # Ensure clean build for assembly resolution fixes
+        dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+        dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release --verbosity normal
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
+          --collect:"XPlat Code Coverage" `
+          --results-directory ./coverage-check/ `
+          --settings test.runsettings `
+          --verbosity normal
+
+        # Extract coverage percentage from XML report
+        $coverageFiles = Get-ChildItem -Path "./coverage-check/" -Recurse -Filter "coverage.cobertura.xml"
+        if ($coverageFiles.Count -gt 0) {
+          [xml]$xml = Get-Content $coverageFiles[0].FullName
+          $lineRate = [double]$xml.coverage.'line-rate'
+          $percentage = [math]::Round($lineRate * 100, 2)
+
+          Write-Host "::notice::Code coverage: $percentage%"
+
+          # Set minimum coverage threshold (adjust as needed)
+          $threshold = 80
+          if ($percentage -lt $threshold) {
+            Write-Host "::warning::Code coverage ($percentage%) is below threshold ($threshold%)"
+            exit 1
+          } else {
+            Write-Host "::notice::Code coverage ($percentage%) meets threshold ($threshold%)"
+          }
+        } else {
+          Write-Host "::error::No coverage report found"
+          exit 1
+        }

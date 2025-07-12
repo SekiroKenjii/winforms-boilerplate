@@ -47,7 +47,7 @@ public class LocalStore : Disposable, ILocalStore
         if (value is JsonElement el)
         {
             Type type = typeof(T);
-            string typeName = type.GetGenericTypeDefinition() == typeof(Nullable<>)
+            string typeName = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>)
                 ? Nullable.GetUnderlyingType(type)?.Name ?? ""
                 : type.Name;
 
@@ -104,9 +104,7 @@ public class LocalStore : Disposable, ILocalStore
     /// <inheritdoc cref="Disposable.Dispose(bool)" />
     protected override void Dispose(bool disposing)
     {
-        base.Dispose(disposing);
-
-        if (Disposed)
+        if (!disposing || Disposed)
         {
             return;
         }
@@ -117,5 +115,7 @@ public class LocalStore : Disposable, ILocalStore
         }
 
         _store.Clear();
+
+        base.Dispose(disposing);
     }
 }

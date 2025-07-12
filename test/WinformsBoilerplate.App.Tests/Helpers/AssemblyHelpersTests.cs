@@ -9,15 +9,15 @@ public class AssemblyHelpersTests
         AssemblyHelpers.ValidateLibVersions(out Version requiredVersion);
 
         // Assert
-        requiredVersion.Should().NotBeNull();
-        requiredVersion.Should().Be(new Version(Application.ProductVersion));
+        Assert.NotNull(requiredVersion);
+        Assert.Equal(new Version(Application.ProductVersion), requiredVersion);
     }
 
     [Fact]
     public void ValidateLibVersions_ShouldExecuteWithoutThrowing()
     {
         // Arrange & Act & Assert
-        var act = () => AssemblyHelpers.ValidateLibVersions(out Version _);
-        act.Should().NotThrow();
+        var exception = Record.Exception(() => AssemblyHelpers.ValidateLibVersions(out Version _));
+        Assert.Null(exception);
     }
 }

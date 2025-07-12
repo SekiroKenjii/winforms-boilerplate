@@ -13,12 +13,12 @@ public class EnumerableExtensionsTests
         source.ForEach((value, index) => results.Add((value, index)));
 
         // Assert
-        results.Should().HaveCount(5);
-        results[0].Should().Be((1, 0));
-        results[1].Should().Be((2, 1));
-        results[2].Should().Be((3, 2));
-        results[3].Should().Be((4, 3));
-        results[4].Should().Be((5, 4));
+        Assert.Equal(5, results.Count);
+        Assert.Equal((1, 0), results[0]);
+        Assert.Equal((2, 1), results[1]);
+        Assert.Equal((3, 2), results[2]);
+        Assert.Equal((4, 3), results[3]);
+        Assert.Equal((5, 4), results[4]);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class EnumerableExtensionsTests
         source.ForEach((_, _) => actionExecuted = true);
 
         // Assert
-        actionExecuted.Should().BeFalse();
+        Assert.False(actionExecuted);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class EnumerableExtensionsTests
 
         // Act & Assert
         var act = () => source!.ForEach((_, _) => { });
-        act.Should().Throw<ArgumentNullException>();
+        Assert.Throws<ArgumentNullException>(act);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class EnumerableExtensionsTests
 
         // Act & Assert
         var act = () => source.ForEach(action!);
-        act.Should().Throw<ArgumentNullException>();
+        Assert.Throws<ArgumentNullException>(act);
     }
 
     [Theory]
@@ -69,7 +69,7 @@ public class EnumerableExtensionsTests
         source.ForEach((_, _) => count++);
 
         // Assert
-        count.Should().Be(source.Length);
+        Assert.Equal(source.Length, count);
     }
 
     public static IEnumerable<object[]> GetTestData()

@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  SOLUTION_FILE: 'WinformsBoilerplate.sln'
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        platform: [Any CPU]  # Note: x86 disabled due to .NET 9 preview apphost.exe issue
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.os == 'Windows' && '~\.nuget\packages' || '~/.nuget/packages' }}
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json', '**/*.csproj', '**/Directory.Packages.props') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
+
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal
+
+    - name: Run tests
+      run: |
+        # Force rebuild of test projects to ensure all dependencies are copied
+        dotnet clean ${{ env.SOLUTION_FILE }} --configuration ${{ matrix.configuration }}
+        dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ matrix.configuration }} /p:Platform="${{ matrix.platform }}" --verbosity normal
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration ${{ matrix.configuration }} --verbosity normal --logger trx --results-directory TestResults/ --collect:"XPlat Code Coverage"
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.configuration }}-${{ matrix.platform == 'Any CPU' && 'AnyCPU' || matrix.platform }}
+        path: TestResults/
+        retention-days: 30
+
+  code-quality:
+    runs-on: windows-latest
+    needs: build-and-test
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity normal
+
+    - name: Build solution
+      run: dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release --verbosity normal
+
+    - name: Run tests with coverage
+      run: |
+        # Ensure clean build for code quality analysis
+        dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release
+        dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
+        dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
+          --collect:"XPlat Code Coverage" `
+          --results-directory ./coverage-reports/ `
+          --settings test.runsettings `
+          --verbosity normal
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        directory: ./coverage-reports/
+        files: '**/coverage.cobertura.xml'
+        fail_ci_if_error: false
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

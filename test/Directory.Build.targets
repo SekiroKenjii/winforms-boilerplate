@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- Force all dependencies to be copied locally for test projects -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <CopyLocalRuntimeTargetAssets>true</CopyLocalRuntimeTargetAssets>
+
+    <!-- Enable automatic binding redirect generation -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+
+    <!-- Ensure runtime config files are generated -->
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+
+    <!-- Copy all runtime assets -->
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <_ResolveLocalMachineAssemblies>true</_ResolveLocalMachineAssemblies>
+  </PropertyGroup>
+
+  <!-- Force copy all Microsoft.Extensions assemblies to output for test projects -->
+  <Target Name="ForceCopyMicrosoftExtensions" AfterTargets="ResolveAssemblyReferences" Condition="'$(IsTestProject)' == 'true'">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Update="@(ReferenceCopyLocalPaths)" Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions'))" >
+        <CopyLocal>true</CopyLocal>
+        <Private>true</Private>
+      </ReferenceCopyLocalPaths>
+    </ItemGroup>
+  </Target>
+
+  <!-- Additional probing paths for assembly resolution -->
+  <Target Name="AddAssemblyProbingPaths" AfterTargets="ResolveAssemblyReferences" Condition="'$(IsTestProject)' == 'true'">
+    <ItemGroup>
+      <RuntimeConfigProperties Include="Microsoft.NETCore.DotNetHostPolicy.SetAppPaths" Value="true" />
+      <RuntimeConfigProperties Include="System.Runtime.Loader.UseRidGraph" Value="true" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Ensure testhost runtime config is properly created -->
+  <Target Name="EnsureTestHostRuntimeConfig" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(IsTestProject)' == 'true'">
+    <ItemGroup>
+      <TestHostRuntimeConfig Include="$(OutputPath)testhost.runtimeconfig.json" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(OutputPath)testhost.runtimeconfig.json"
+      Lines='{
+  "runtimeOptions": {
+    "tfm": "net9.0",
+    "framework": {
+      "name": "Microsoft.WindowsDesktop.App",
+      "version": "9.0.0"
+    }
+  }
+}'
+      Overwrite="true"
+      Condition="!Exists('$(OutputPath)testhost.runtimeconfig.json')" />
+  </Target>
+</Project>
