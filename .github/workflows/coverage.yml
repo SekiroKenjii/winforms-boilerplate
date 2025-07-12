@@ -48,7 +48,7 @@ jobs:
       run: |
         # Ensure clean build for assembly resolution fixes
         dotnet clean ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
-        dotnet build ${{ env.SOLUTION_FILE }} --no-restore --configuration Release --verbosity normal
+        dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal
         dotnet test ${{ env.SOLUTION_FILE }} --no-build --configuration Release `
           --collect:"XPlat Code Coverage" `
           --results-directory ./coverage-reports/ `
