@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
-namespace WinformsBoilerplate.Infrastructure.Tests;
+namespace WinformsBoilerplate.App.Tests;
 
 /// <summary>
 /// Module initializer to ensure Microsoft.Extensions assemblies are loaded early.
@@ -23,11 +23,8 @@ internal static class ModuleInitializer
         {
             // These calls will force the assemblies to be loaded into the AppDomain
             _ = typeof(ServiceCollection);
-            _ = typeof(IOptions<>);
-            _ = typeof(StringValues);
-            _ = typeof(Microsoft.Extensions.Logging.ILogger);
-            _ = typeof(Microsoft.Extensions.Configuration.IConfiguration);
-            _ = typeof(Microsoft.Extensions.DependencyInjection.ServiceDescriptor);
+            _ = typeof(IConfiguration);
+            _ = typeof(IHost);
         }
         catch
         {
